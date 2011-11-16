@@ -73,10 +73,10 @@ class Map
 
 class Tile
   constructor: (@sprite, @type, @row, @col, @green=0, @z=0) ->
-    @tileTop = null
-    @tileBottom = null
-    @tileLeft = null
-    @tileRight = null
+    #@tileTop = null
+    #@tileBottom = null
+    #@tileLeft = null
+    #@tileRight = null
     
   isWalkable: ->
     #@green is 0
