@@ -12,7 +12,7 @@ class Hero
         "normal": 3
         "jumping": 5
 
-    @coor = new Vector( 150, 200 )
+    @coor = new Vector( 200, 300 )
     @start_coor = @coor
     @speed = new Vector( 0, 0 )
     @force = 0.01

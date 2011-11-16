@@ -604,7 +604,7 @@
           "jumping": 5
         }
       });
-      this.coor = new Vector(150, 200);
+      this.coor = new Vector(200, 300);
       this.start_coor = this.coor;
       this.speed = new Vector(0, 0);
       this.force = 0.01;
