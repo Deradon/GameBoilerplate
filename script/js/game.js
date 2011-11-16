@@ -248,14 +248,12 @@
       map.src = file;
       m = [];
       return $(map).load(__bind(function() {
-        var canvas, col, ctx, data, green, i, p, row, type, z, _len, _ref, _ref2, _ref3, _ref4, _results, _results2, _results3, _step;
+        var canvas, col, ctx, data, green, i, p, row, type, z, _len, _ref, _ref2, _ref3, _ref4, _ref5, _results, _results2, _step;
         canvas = document.createElement("canvas");
         this.width = map.width;
         this.height = map.height;
         canvas.width = map.width;
         canvas.height = map.height;
-        console.log(canvas.width);
-        console.log(canvas.height);
         ctx = canvas.getContext("2d");
         ctx.drawImage(map, 0, 0);
         data = ctx.getImageData(0, 0, map.width, map.height).data;
@@ -286,35 +284,28 @@
             return _results;
             break;
           case "square":
-            _results2 = [];
             for (row = 0, _ref3 = map.height - 2; 0 <= _ref3 ? row <= _ref3 : row >= _ref3; 0 <= _ref3 ? row++ : row--) {
+              for (col = 0, _ref4 = map.width - 2; 0 <= _ref4 ? col <= _ref4 : col >= _ref4; 0 <= _ref4 ? col++ : col--) {
+                type = "" + m[row][col][0] + m[row][col + 1][0] + m[row + 1][col][0] + m[row + 1][col + 1][0];
+                green = parseInt(m[row][col][1], 16);
+                z = 1;
+                this.tiles.push(new Tile(this.sprite, type, row, col, green, z));
+              }
+            }
+            return console.log(this.tiles);
+          case "cross":
+            _results2 = [];
+            for (row = 1, _ref5 = map.height - 2; row <= _ref5; row += 2) {
               _results2.push((function() {
-                var _ref4, _results3;
+                var _ref6, _results3;
                 _results3 = [];
-                for (col = 0, _ref4 = map.width - 2; 0 <= _ref4 ? col <= _ref4 : col >= _ref4; 0 <= _ref4 ? col++ : col--) {
-                  type = "" + m[row][col][0] + m[row][col + 1][0] + m[row + 1][col][0] + m[row + 1][col + 1][0];
-                  green = parseInt(m[row][col][1], 16);
-                  z = 1;
-                  _results3.push(this.tiles.push(new Tile(this.sprite, type, row, col, green, z)));
+                for (col = 1, _ref6 = map.width - 2; col <= _ref6; col += 2) {
+                  _results3.push(m[row][col][0] !== "00" ? (type = "" + m[row - 1][col][0] + m[row][col + 1][0] + m[row + 1][col][0] + m[row][col - 1][0], green = parseInt(m[row][col][1], 16), z = parseInt(m[row][col][2], 16), this.tiles.push(new Tile(this.sprite, type, row / 2, col / 2, green, z))) : void 0);
                 }
                 return _results3;
               }).call(this));
             }
             return _results2;
-            break;
-          case "cross":
-            _results3 = [];
-            for (row = 1, _ref4 = map.height - 2; row <= _ref4; row += 2) {
-              _results3.push((function() {
-                var _ref5, _results4;
-                _results4 = [];
-                for (col = 1, _ref5 = map.width - 2; col <= _ref5; col += 2) {
-                  _results4.push(m[row][col][0] !== "00" ? (type = "" + m[row - 1][col][0] + m[row][col + 1][0] + m[row + 1][col][0] + m[row][col - 1][0], green = parseInt(m[row][col][1], 16), z = parseInt(m[row][col][2], 16), this.tiles.push(new Tile(this.sprite, type, row / 2, col / 2, green, z))) : void 0);
-                }
-                return _results4;
-              }).call(this));
-            }
-            return _results3;
         }
       }, this));
     };
@@ -631,7 +622,7 @@
           "99990099": 8,
           "99999900": 9,
           "99009999": 10,
-          "00999999": 99,
+          "00999999": 11,
           "00000000": 12,
           "99999999": 13,
           "00999900": 14,

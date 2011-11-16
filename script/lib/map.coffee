@@ -47,6 +47,8 @@ class Map
               green = parseInt( m[row][col][1], 16 )
               z = 1#parseInt( m[row][col][2], 16 )
               @tiles.push( new Tile( @sprite, type, row, col, green, z ))
+
+          console.log @tiles
         when "cross"
           for row in [1..map.height-2] by 2
             for col in [1..map.width-2] by 2
