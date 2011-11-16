@@ -17,12 +17,8 @@ class Hero
     @speed = new Vector( 0, 0 )
     @force = 0.01
     @gravity = 0.00
+    @decay = 0.95
 
-    # event Manager
-    @eventmanager.register "touchdown", @touchdown
-
-  touchdown: ->
-    console.log "Hero says: Touchdown occurred"
 
   update: (delta, map) ->
     tile = map.tileAtVector(@coor)
@@ -34,10 +30,7 @@ class Hero
     else if @keyboard.key("left")
       @speed.x -= @force
     else
-      if @speed.x > 0
-        @speed.x -= @force
-#      else
-#        @speed.x += @force
+      @speed.x *= @decay
 
     # up/down movement
     # left/right movement
@@ -46,16 +39,17 @@ class Hero
     else if @keyboard.key("down")
       @speed.y += @force
     else
-      if @speed.y > 0
-        @speed.y -= @force
-#      else
-#        @speed.y += @force
+      @speed.y *= @decay
 
     # apply gravity
-    if !tile.isWalkable?()
+    new_coor = @coor.add( @speed.mult delta )
+    if map.tileAtVector(new_coor).isWalkable?()
+      @coor = new_coor
+    else
       $("#debug-last-tile").html("#{tile.row} - #{tile.col}")
-      console.log tile
-      @coor = @start_coor
+      diff = new_coor.subtract(@coor)
+      #console.log diff
+
       @speed.y = 0
       @speed.x = 0
 
@@ -68,7 +62,7 @@ class Hero
 #      @state = "jumping"
 #      @speed.y = -0.5
 
-    @coor = @coor.add( @speed.mult delta )
+
 
   render: (ctx) ->
     ctx.save()

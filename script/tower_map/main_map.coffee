@@ -1,7 +1,8 @@
 
 stateclass["main_map"] = class StateMainMap extends State
   constructor: (@parent) ->
-    @camera = new Camera {"projection": "iso", "vpWidth": @parent.width, "vpHeight": @parent.height}
+    @camera = new Camera {"projection": "normal", "vpWidth": @parent.width, "vpHeight": @parent.height}
+    #@camera = new Camera {"projection": "iso", "vpWidth": @parent.width, "vpHeight": @parent.height}
 
     beach3d = new Sprite
       "texture": "assets/images/beach3d.png"
@@ -34,16 +35,27 @@ stateclass["main_map"] = class StateMainMap extends State
 
     @hero = new Hero @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(2,0)
     @hero.gravity = 0.0
-    console.log @map
-    console.log @hero
 
+    # DEBUG TOWERS
+    @towers = []
+    @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(4,5)
+    @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(5,5)
 
   update: (delta) ->
     @hero.update(delta, @map)
+
+    # DEBUG TOWER
+    for tower in @towers
+      tower.update(delta)
+
     @camera.coor = @hero.coor
 
   render: (ctx) ->
     @camera.apply ctx, =>
       @map.render(ctx)
       @hero.render(ctx)
+
+      # DEBUG TOWER
+      for tower in @towers
+        tower.render(ctx)
 

@@ -57,6 +57,7 @@ class Map
                 z = parseInt( m[row][col][2], 16 )
                 @tiles.push( new Tile( @sprite, type, row/2, col/2, green, z ))
 
+  # Original Method bugged
   tileAtVector: (vec) ->
     col = Math.floor( vec.x / @sprite.innerWidth )
     row = Math.floor( vec.y / @sprite.innerHeight )

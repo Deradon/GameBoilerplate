@@ -1,5 +1,5 @@
 (function() {
-  var Animation, Background, Camera, Eventmanager, Game, Hero, Keyboard, Map, Shape, Sprite, State, StateMainMap, Statemanager, Tile, Timer, TowerMap, Vector, root, stateclass;
+  var Animation, Background, Camera, Eventmanager, Game, Hero, Keyboard, Map, Shape, Sprite, State, StateMainMap, Statemanager, Tile, Timer, Tower, TowerMap, Vector, root, stateclass;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
     function ctor() { this.constructor = child; }
@@ -439,7 +439,9 @@
       if (this.playing) {
         this.currentFrame = Math.floor(this.timer.timeSinceLastPunch() / (1000 / this.fps));
         if (this.currentFrame > this.lastFrame) {
-          this.callback();
+          if (typeof this.callback === "function") {
+            this.callback();
+          }
           if (this.loop) {
             this.rewind();
           } else {
@@ -547,7 +549,7 @@
       var beach3d;
       this.parent = parent;
       this.camera = new Camera({
-        "projection": "iso",
+        "projection": "normal",
         "vpWidth": this.parent.width,
         "vpHeight": this.parent.height
       });
@@ -585,17 +587,36 @@
         "coor": this.map.vectorAtTile(2, 0)
       });
       this.hero.gravity = 0.0;
-      console.log(this.map);
-      console.log(this.hero);
+      this.towers = [];
+      this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
+        "coor": this.map.vectorAtTile(4, 5)
+      }));
+      this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
+        "coor": this.map.vectorAtTile(5, 5)
+      }));
     }
     StateMainMap.prototype.update = function(delta) {
+      var tower, _i, _len, _ref;
       this.hero.update(delta, this.map);
+      _ref = this.towers;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        tower = _ref[_i];
+        tower.update(delta);
+      }
       return this.camera.coor = this.hero.coor;
     };
     StateMainMap.prototype.render = function(ctx) {
       return this.camera.apply(ctx, __bind(function() {
+        var tower, _i, _len, _ref, _results;
         this.map.render(ctx);
-        return this.hero.render(ctx);
+        this.hero.render(ctx);
+        _ref = this.towers;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          tower = _ref[_i];
+          _results.push(tower.render(ctx));
+        }
+        return _results;
       }, this));
     };
     return StateMainMap;
@@ -619,13 +640,10 @@
       this.speed = new Vector(0, 0);
       this.force = 0.01;
       this.gravity = 0.00;
-      this.eventmanager.register("touchdown", this.touchdown);
+      this.decay = 0.95;
     }
-    Hero.prototype.touchdown = function() {
-      return console.log("Hero says: Touchdown occurred");
-    };
     Hero.prototype.update = function(delta, map) {
-      var tile;
+      var diff, new_coor, tile, _base;
       tile = map.tileAtVector(this.coor);
       $("#debug").html("" + tile.row + " - " + tile.col);
       if (this.keyboard.key("right")) {
@@ -633,31 +651,28 @@
       } else if (this.keyboard.key("left")) {
         this.speed.x -= this.force;
       } else {
-        if (this.speed.x > 0) {
-          this.speed.x -= this.force;
-        }
+        this.speed.x *= this.decay;
       }
       if (this.keyboard.key("up")) {
         this.speed.y -= this.force;
       } else if (this.keyboard.key("down")) {
         this.speed.y += this.force;
       } else {
-        if (this.speed.y > 0) {
-          this.speed.y -= this.force;
-        }
+        this.speed.y *= this.decay;
       }
-      if (!(typeof tile.isWalkable === "function" ? tile.isWalkable() : void 0)) {
+      new_coor = this.coor.add(this.speed.mult(delta));
+      if (typeof (_base = map.tileAtVector(new_coor)).isWalkable === "function" ? _base.isWalkable() : void 0) {
+        this.coor = new_coor;
+      } else {
         $("#debug-last-tile").html("" + tile.row + " - " + tile.col);
-        console.log(tile);
-        this.coor = this.start_coor;
+        diff = new_coor.subtract(this.coor);
         this.speed.y = 0;
         this.speed.x = 0;
       }
       if (this.keyboard.key("up")) {
         this.speed.y -= 0.0;
-        this.speed.x -= 0.0;
+        return this.speed.x -= 0.0;
       }
-      return this.coor = this.coor.add(this.speed.mult(delta));
     };
     Hero.prototype.render = function(ctx) {
       ctx.save();
@@ -666,5 +681,30 @@
       return ctx.restore();
     };
     return Hero;
+  })();
+  Tower = (function() {
+    function Tower(eventmanager, keyboard, options) {
+      this.eventmanager = eventmanager;
+      this.keyboard = keyboard;
+      this.state = "normal";
+      this.sprite = new Sprite({
+        "texture": "assets/images/test.png",
+        "width": 50,
+        "height": 50,
+        "key": {
+          "normal": 3,
+          "jumping": 5
+        }
+      });
+      this.coor = options["coor"];
+    }
+    Tower.prototype.update = function(delta) {};
+    Tower.prototype.render = function(ctx) {
+      ctx.save();
+      ctx.translate(this.coor.x, this.coor.y);
+      this.sprite.render(this.state, ctx);
+      return ctx.restore();
+    };
+    return Tower;
   })();
 }).call(this);
