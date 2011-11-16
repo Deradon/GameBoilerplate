@@ -15,15 +15,16 @@ libFiles  = [
   'lib/statemanager'
   'lib/camera'
 ]
+
 appFiles = [
-  'asteroids'
-  'demostate_bigbackground'
-  'demostate_height'
-  'demostate_iso'
-  'demostate_jumpnrun'
-  'demostate_maze'
-  'spaceship'
-  'hero'
+  'demo/asteroids'
+  'demo/demostate_bigbackground'
+  'demo/demostate_height'
+  'demo/demostate_iso'
+  'demo/demostate_jumpnrun'
+  'demo/demostate_maze'
+  'demo/spaceship'
+  'demo/hero'
 ]
 
 task 'build:coffee', 'Build single application file from source files', ->
@@ -48,3 +49,4 @@ task 'build:sass', 'Compile sass files into css', ->
   exec 'sass stylesheets/main.sass stylesheets/css/main.css', (err, stdout, stderr) ->
     throw err if err
     console.log stdout + stderr
+
