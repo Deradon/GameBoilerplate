@@ -22,7 +22,6 @@ class Hero
 
   update: (delta, map) ->
     tile = map.tileAtVector(@coor)
-    $("#debug").html("#{tile.row} - #{tile.col}")
 
     # left/right movement
     if @keyboard.key("right")
@@ -46,7 +45,6 @@ class Hero
     if map.tileAtVector(new_coor).isWalkable?()
       @coor = new_coor
     else
-      $("#debug-last-tile").html("#{tile.row} - #{tile.col}")
 
       @speed.y = 0
       @speed.x = 0

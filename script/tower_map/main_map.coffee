@@ -35,7 +35,7 @@ stateclass["main_map"] = class StateMainMap extends State
 
     @hero = new Hero @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(2,0)
     @hero.gravity = 0.0
-    @creep = new Creep @parent.eventmanager, {"coor": @map.vectorAtTile(2,0), "speed": new Vector(0,0.001)}
+    @creep = new Creep @parent.eventmanager, {"coor": @map.vectorAtTile(2,0), "speed": new Vector(0,0.07)}
 
     # DEBUG TOWERS
     @towers = []
@@ -51,13 +51,13 @@ stateclass["main_map"] = class StateMainMap extends State
     @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(4,14)
 
   update: (delta) ->
-    @hero.update(delta, @map)
+    #@hero.update(delta, @map)
 
     # DEBUG TOWER
     for tower in @towers
       tower.update(delta, @hero)
 
-    @camera.coor = @hero.coor
+    #@camera.coor = @hero.coor
     @creep.update(delta, @map)
     #@camera.coor = @hero.coor
 
@@ -65,7 +65,7 @@ stateclass["main_map"] = class StateMainMap extends State
     @camera.apply ctx, =>
       @map.render(ctx)
       @creep.render(ctx)
-      @hero.render(ctx)
+      #@hero.render(ctx)
 
       # DEBUG TOWER
       for tower in @towers
