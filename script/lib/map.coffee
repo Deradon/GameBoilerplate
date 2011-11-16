@@ -56,8 +56,25 @@ class Map
                 @tiles.push( new Tile( @sprite, type, row/2, col/2, green, z ))
       
       # Updates surrounding tiles
-      #for tile in @tiles 
+      for tile in @tiles 
+        if tile.row && tile.col
 
+          for s_tile in @tiles
+            if ((s_tile.row == (tile.row - 1)) && (tile.col == s_tile.col))
+              tile.sourrounding["top"] = s_tile
+            if ((s_tile.row == (tile.row + 1)) && (tile.col == s_tile.col))
+              tile.sourrounding["bottom"] = s_tile
+            if ((s_tile.row == tile.row) && ((tile.col + 1) == s_tile.col))
+              tile.sourrounding["right"] = s_tile
+            if ((s_tile.row == tile.row) && ((tile.col - 1) == s_tile.col))
+              tile.sourrounding["left"] = s_tile
+          
+        #tile.sourrounding["left"]   = @tiles[(tile.row * @width + (tile.col - 1))-1]
+        #tile.sourrounding["right"]  = @tiles[(tile.row * @width + (tile.col + 1))-1]
+        #tile.sourrounding["top"]    = @tiles[((tile.row - 1) * @width + tile.col)-1]
+        #tile.sourrounding["bottom"] = @tiles[((tile.row + 1) * @width + tile.col)-1]
+
+  # Original Method bugged
   tileAtVector: (vec) ->
     col = Math.floor( vec.x / @sprite.innerWidth )
     row = Math.floor( vec.y / @sprite.innerHeight )
@@ -73,10 +90,7 @@ class Map
 
 class Tile
   constructor: (@sprite, @type, @row, @col, @green=0, @z=0) ->
-    #@tileTop = null
-    #@tileBottom = null
-    #@tileLeft = null
-    #@tileRight = null
+    @sourrounding = {"left":null,"right":null,"top":null,"bottom":null}
     
   isWalkable: ->
     #@green is 0

@@ -1,6 +1,7 @@
 
 stateclass["main_map"] = class StateMainMap extends State
   constructor: (@parent) ->
+#    @camera = new Camera {"projection": "normal", "vpWidth": @parent.width, "vpHeight": @parent.height}
     @camera = new Camera {"projection": "iso", "vpWidth": @parent.width, "vpHeight": @parent.height}
 
     beach3d = new Sprite
@@ -32,11 +33,23 @@ stateclass["main_map"] = class StateMainMap extends State
       "pattern": "square"
       "sprite": beach3d
 
-    @creep = new Creep @parent.eventmanager, {"coor": @map.vectorAtTile(2,0), "speed": new Vector(0,0.1)}
+    #@hero = new Hero @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(2,0)
+    #@hero.gravity = 0.0
+    @creep = new Creep @parent.eventmanager, {"coor": @map.vectorAtTile(2,0), "speed": new Vector(0,0.07)}
 
-
+    # DEBUG TOWERS
+    @towers = []
+    @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(4,5)
+    @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(5,5)
 
   update: (delta) ->
+    #@hero.update(delta, @map)
+
+    # DEBUG TOWER
+    for tower in @towers
+      tower.update(delta)
+
+    #@camera.coor = @hero.coor
     @creep.update(delta, @map)
     #@camera.coor = @hero.coor
 
@@ -44,4 +57,9 @@ stateclass["main_map"] = class StateMainMap extends State
     @camera.apply ctx, =>
       @map.render(ctx)
       @creep.render(ctx)
+      #@hero.render(ctx)
+
+      # DEBUG TOWER
+      for tower in @towers
+        tower.render(ctx)
 

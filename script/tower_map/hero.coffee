@@ -17,16 +17,11 @@ class Hero
     @speed = new Vector( 0, 0 )
     @force = 0.01
     @gravity = 0.00
+    @decay = 0.95
 
-    # event Manager
-    @eventmanager.register "touchdown", @touchdown
-
-  touchdown: ->
-    console.log "Hero says: Touchdown occurred"
 
   update: (delta, map) ->
     tile = map.tileAtVector(@coor)
-    $("#debug").html("#{tile.row} - #{tile.col}")
 
     # left/right movement
     if @keyboard.key("right")
@@ -34,10 +29,7 @@ class Hero
     else if @keyboard.key("left")
       @speed.x -= @force
     else
-      if @speed.x > 0
-        @speed.x -= @force
-      else
-        @speed.x += @force
+      @speed.x *= @decay
 
     # up/down movement
     # left/right movement
@@ -46,29 +38,27 @@ class Hero
     else if @keyboard.key("down")
       @speed.y += @force
     else
-      if @speed.y > 0
-        @speed.y -= @force
-      else
-        @speed.y += @force
+      @speed.y *= @decay
 
-    # apply gravity
-    if !tile.isWalkable?()
-      $("#debug-last-tile").html("#{tile.row} - #{tile.col}")
-      console.log tile
-      @coor = @start_coor
+    new_coor = @coor.add( @speed.mult delta )
+    walkable = map.tileAtVector(new_coor).isWalkable?()
+    if map.tileAtVector(new_coor).isWalkable?()
+      @coor = new_coor
+    else
+
       @speed.y = 0
       @speed.x = 0
 
-    if @keyboard.key("up")
-      @speed.y -= 0.0
-      @speed.x -= 0.0
+    if @keyboard.key("space")
+      @speed.y = 0.0
+      @speed.x = 0.0
 
 #    # jump
 #    if @keyboard.key("space") and @state isnt "jumping"
 #      @state = "jumping"
 #      @speed.y = -0.5
 
-    @coor = @coor.add( @speed.mult delta )
+
 
   render: (ctx) ->
     ctx.save()

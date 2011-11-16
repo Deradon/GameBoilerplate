@@ -31,6 +31,7 @@ appFiles = [
   'tower_map/tower_map'
   'tower_map/main_map'
   'tower_map/hero'
+  'tower_map/tower'
   'tower_map/creep'
 ]
 
