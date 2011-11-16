@@ -4,7 +4,7 @@ stateclass["main_map"] = class StateMainMap extends State
     @camera = new Camera {"projection": "iso", "vpWidth": @parent.width, "vpHeight": @parent.height}
 
     beach3d = new Sprite
-      "texture": "assets/images/beach3d.png"
+      "texture": "assets/images/wc33d.png"
       "width": 107
       "height": 107
       "innerWidth": 87
@@ -32,18 +32,16 @@ stateclass["main_map"] = class StateMainMap extends State
       "pattern": "square"
       "sprite": beach3d
 
-    @hero = new Hero @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(2,0)
-    @hero.gravity = 0.0
-    console.log @map
-    console.log @hero
+    @creep = new Creep @parent.eventmanager, {"coor": @map.vectorAtTile(2,0), "speed": new Vector(0,0.1)}
+
 
 
   update: (delta) ->
-    @hero.update(delta, @map)
-    @camera.coor = @hero.coor
+    @creep.update(delta, @map)
+    #@camera.coor = @hero.coor
 
   render: (ctx) ->
     @camera.apply ctx, =>
       @map.render(ctx)
-      @hero.render(ctx)
+      @creep.render(ctx)
 

@@ -11,8 +11,6 @@ class Map
     for tile in @tiles
       tile.render(ctx)
 
-  # http://stackoverflow.com/questions/3102819/chrome-disable-same-origin-policy
-  # http://stackoverflow.com/questions/934012/get-image-data-in-javascript
   loadMapDataFromImage: (file, pattern) ->
     map = new Image()
     map.src = file
@@ -56,6 +54,9 @@ class Map
                 green = parseInt( m[row][col][1], 16 )
                 z = parseInt( m[row][col][2], 16 )
                 @tiles.push( new Tile( @sprite, type, row/2, col/2, green, z ))
+      
+      # Updates surrounding tiles
+      #for tile in @tiles 
 
   tileAtVector: (vec) ->
     col = Math.floor( vec.x / @sprite.innerWidth )
@@ -72,7 +73,11 @@ class Map
 
 class Tile
   constructor: (@sprite, @type, @row, @col, @green=0, @z=0) ->
-
+    @tileTop = null
+    @tileBottom = null
+    @tileLeft = null
+    @tileRight = null
+    
   isWalkable: ->
     #@green is 0
     @type is "99999999"

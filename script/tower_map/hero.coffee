@@ -36,8 +36,8 @@ class Hero
     else
       if @speed.x > 0
         @speed.x -= @force
-#      else
-#        @speed.x += @force
+      else
+        @speed.x += @force
 
     # up/down movement
     # left/right movement
@@ -48,8 +48,8 @@ class Hero
     else
       if @speed.y > 0
         @speed.y -= @force
-#      else
-#        @speed.y += @force
+      else
+        @speed.y += @force
 
     # apply gravity
     if !tile.isWalkable?()
