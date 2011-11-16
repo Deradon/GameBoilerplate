@@ -26,7 +26,7 @@ class Tower
   update: (delta, hero) ->
     @current_scan_rate += delta
     if @current_scan_rate >= @scan_rate
-      @current_scan_rate = @scan_rate - @current_scan_rate
+      @current_scan_rate -= @scan_rate
       @scan(hero)
 
 

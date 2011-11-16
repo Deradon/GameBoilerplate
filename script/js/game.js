@@ -645,7 +645,7 @@
       _ref = this.towers;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         tower = _ref[_i];
-        tower.update(delta, this.hero);
+        tower.update(delta, this.creep);
       }
       return this.creep.update(delta, this.map);
     };

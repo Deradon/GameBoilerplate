@@ -55,7 +55,7 @@ stateclass["main_map"] = class StateMainMap extends State
 
     # DEBUG TOWER
     for tower in @towers
-      tower.update(delta, @hero)
+      tower.update(delta, @creep)
 
     #@camera.coor = @hero.coor
     @creep.update(delta, @map)
