@@ -1,7 +1,8 @@
 
 stateclass["iso"] = class StateIso extends State
   constructor: (@parent) ->
-    
+    @camera = new Camera {"projection": "iso", "vpWidth": @parent.width, "vpHeight": @parent.height}
+
     beach3d = new Sprite
       "texture": "assets/images/beach3d.png"
       "width": 107
@@ -25,14 +26,16 @@ stateclass["iso"] = class StateIso extends State
         "99999999": 13
         "00999900": 14
         "99000099": 15
-        
+
     @background = new Map
       "mapfile": "assets/towermap_map1.png"
       "pattern": "square"
       "sprite": beach3d
-      
-      
+
+
   update: (delta) ->
-    
+
   render: (ctx) ->
-    @background.render(ctx)
+    @camera.apply ctx, =>
+      @background.render(ctx)
+

@@ -3,7 +3,7 @@
 class Game
   constructor: (@width, @height) ->
     canvas = $('<canvas/>').attr({"width": @width, "height": @height})
-    $("body").append(canvas)                                     
+    $("body").append(canvas)
     @ctx = canvas[0].getContext('2d')
     @ctx.font = '400 18px Helvetica, sans-serif'
     @loop = null
@@ -18,9 +18,10 @@ class Game
 
   stop: ->
     @loop.clearInterval()
-  
+
   update: ->
     @timer.punch()
 
   render: ->
     @ctx.fillText( @timer.fps().toFixed(1), 960, 20 )
+

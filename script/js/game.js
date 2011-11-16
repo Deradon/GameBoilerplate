@@ -254,6 +254,8 @@
         this.height = map.height;
         canvas.width = map.width;
         canvas.height = map.height;
+        console.log(canvas.width);
+        console.log(canvas.height);
         ctx = canvas.getContext("2d");
         ctx.drawImage(map, 0, 0);
         data = ctx.getImageData(0, 0, map.width, map.height).data;
@@ -292,7 +294,7 @@
                 for (col = 0, _ref4 = map.width - 2; 0 <= _ref4 ? col <= _ref4 : col >= _ref4; 0 <= _ref4 ? col++ : col--) {
                   type = "" + m[row][col][0] + m[row][col + 1][0] + m[row + 1][col][0] + m[row + 1][col + 1][0];
                   green = parseInt(m[row][col][1], 16);
-                  z = parseInt(m[row][col][2], 16);
+                  z = 1;
                   _results3.push(this.tiles.push(new Tile(this.sprite, type, row, col, green, z)));
                 }
                 return _results3;
@@ -606,6 +608,11 @@
     function StateIso(parent) {
       var beach3d;
       this.parent = parent;
+      this.camera = new Camera({
+        "projection": "iso",
+        "vpWidth": this.parent.width,
+        "vpHeight": this.parent.height
+      });
       beach3d = new Sprite({
         "texture": "assets/images/beach3d.png",
         "width": 107,
@@ -639,7 +646,9 @@
     }
     StateIso.prototype.update = function(delta) {};
     StateIso.prototype.render = function(ctx) {
-      return this.background.render(ctx);
+      return this.camera.apply(ctx, __bind(function() {
+        return this.background.render(ctx);
+      }, this));
     };
     return StateIso;
   })();

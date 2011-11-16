@@ -27,6 +27,17 @@ appFiles = [
   'demo/hero'
 ]
 
+#appFiles = [
+#  'tower_map/tower_map'
+##  'demo/demostate_bigbackground'
+##  'demo/demostate_height'
+##  'demo/demostate_iso'
+##  'demo/demostate_jumpnrun'
+##  'demo/demostate_maze'
+##  'demo/spaceship'
+##  'demo/hero'
+#]
+
 task 'build:coffee', 'Build single application file from source files', ->
   files = libFiles.concat appFiles
   appContents = new Array remaining = files.length
