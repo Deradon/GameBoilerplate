@@ -1,5 +1,5 @@
 (function() {
-  var Animation, Background, Camera, Eventmanager, Game, Hero, Keyboard, Map, Shape, Sprite, State, StateMainMap, Statemanager, Tile, Timer, Tower, TowerMap, Vector, root, stateclass;
+  var Animation, Background, Camera, Creep, Eventmanager, Game, Hero, Keyboard, Map, Shape, Sprite, State, StateMainMap, Statemanager, Tile, Timer, Tower, TowerMap, Vector, root, stateclass;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
     function ctor() { this.constructor = child; }
@@ -554,7 +554,7 @@
         "vpHeight": this.parent.height
       });
       beach3d = new Sprite({
-        "texture": "assets/images/beach3d.png",
+        "texture": "assets/images/wc33d.png",
         "width": 107,
         "height": 107,
         "innerWidth": 87,
@@ -587,6 +587,10 @@
         "coor": this.map.vectorAtTile(2, 0)
       });
       this.hero.gravity = 0.0;
+      this.creep = new Creep(this.parent.eventmanager, {
+        "coor": this.map.vectorAtTile(2, 0),
+        "speed": new Vector(0, 0.1)
+      });
       this.towers = [];
       this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
         "coor": this.map.vectorAtTile(4, 5)
@@ -603,12 +607,14 @@
         tower = _ref[_i];
         tower.update(delta);
       }
-      return this.camera.coor = this.hero.coor;
+      this.camera.coor = this.hero.coor;
+      return this.creep.update(delta, this.map);
     };
     StateMainMap.prototype.render = function(ctx) {
       return this.camera.apply(ctx, __bind(function() {
         var tower, _i, _len, _ref, _results;
         this.map.render(ctx);
+        this.creep.render(ctx);
         this.hero.render(ctx);
         _ref = this.towers;
         _results = [];
@@ -713,5 +719,46 @@
       return ctx.restore();
     };
     return Tower;
+  })();
+  Creep = (function() {
+    function Creep(eventmanager, options) {
+      this.eventmanager = eventmanager;
+      this.state = "normal";
+      this.sprite = new Sprite({
+        "texture": "assets/images/test.png",
+        "width": 50,
+        "height": 50,
+        "key": {
+          "normal": 3,
+          "jumping": 5
+        }
+      });
+      this.coor = options["coor"];
+      this.start_coor = this.coor;
+      if (options["speed"]) {
+        this.speed = options["speed"];
+      } else {
+        this.speed = new Vector(0, 0);
+      }
+      this.force = 0.00;
+      this.last_tile = null;
+      this.gravity = 0.00;
+    }
+    Creep.prototype.update = function(delta, map) {
+      var tile;
+      tile = map.tileAtVector(this.coor);
+      if (!(typeof tile.isWalkable === "function" ? tile.isWalkable() : void 0)) {
+        "pass";
+      }
+      this.coor = this.coor.add(this.speed.mult(delta));
+      return this.last_tile = tile;
+    };
+    Creep.prototype.render = function(ctx) {
+      ctx.save();
+      ctx.translate(this.coor.x, this.coor.y);
+      this.sprite.render(this.state, ctx);
+      return ctx.restore();
+    };
+    return Creep;
   })();
 }).call(this);

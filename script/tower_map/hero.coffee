@@ -41,7 +41,6 @@ class Hero
     else
       @speed.y *= @decay
 
-
     new_coor = @coor.add( @speed.mult delta )
     walkable = map.tileAtVector(new_coor).isWalkable?()
     if map.tileAtVector(new_coor).isWalkable?()
