@@ -19,9 +19,9 @@ class Camera
         ctx.restore()
       when "iso"
         ctx.save()
-        ctx.scale 1, 0.5
+        ctx.scale 1, 0.4 # 1,0.4
         ctx.rotate Math.PI/4
-        ctx.translate 200, -400
+        ctx.translate 300, -400 # 200,-400
         callback()
         ctx.restore()
 

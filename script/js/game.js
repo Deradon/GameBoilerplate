@@ -492,9 +492,9 @@
           return ctx.restore();
         case "iso":
           ctx.save();
-          ctx.scale(1, 0.5);
+          ctx.scale(1, 0.4);
           ctx.rotate(Math.PI / 4);
-          ctx.translate(200, -400);
+          ctx.translate(300, -400);
           callback();
           return ctx.restore();
       }
