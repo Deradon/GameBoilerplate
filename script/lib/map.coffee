@@ -45,10 +45,8 @@ class Map
             for col in [0..map.width-2]
               type = "#{m[row][col][0]}#{m[row][col+1][0]}#{m[row+1][col][0]}#{m[row+1][col+1][0]}"
               green = parseInt( m[row][col][1], 16 )
-              z = 1#parseInt( m[row][col][2], 16 )
+              z = 0#parseInt( m[row][col][2], 16 )
               @tiles.push( new Tile( @sprite, type, row, col, green, z ))
-
-          console.log @tiles
         when "cross"
           for row in [1..map.height-2] by 2
             for col in [1..map.width-2] by 2
@@ -68,7 +66,8 @@ class Tile
   constructor: (@sprite, @type, @row, @col, @green=0, @z=0) ->
 
   isWalkable: ->
-    @green is 0
+    #@green is 0
+    @type is "99999999"
 
   render: (ctx) ->
     ctx.save()

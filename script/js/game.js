@@ -1,5 +1,5 @@
 (function() {
-  var Animation, Asteroids, Background, Camera, Eventmanager, Game, Hero, Keyboard, Map, Shape, Spaceship, Sprite, State, StateBigBackground, StateHeight, StateIso, StateJumpNRun, StateMaze, Statemanager, Tile, Timer, Vector, root, stateclass;
+  var Animation, Background, Camera, Eventmanager, Game, Hero, Keyboard, Map, Shape, Sprite, State, StateMainMap, Statemanager, Tile, Timer, TowerMap, Vector, root, stateclass;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
     function ctor() { this.constructor = child; }
@@ -248,7 +248,7 @@
       map.src = file;
       m = [];
       return $(map).load(__bind(function() {
-        var canvas, col, ctx, data, green, i, p, row, type, z, _len, _ref, _ref2, _ref3, _ref4, _ref5, _results, _results2, _step;
+        var canvas, col, ctx, data, green, i, p, row, type, z, _len, _ref, _ref2, _ref3, _ref4, _results, _results2, _results3, _step;
         canvas = document.createElement("canvas");
         this.width = map.width;
         this.height = map.height;
@@ -284,28 +284,35 @@
             return _results;
             break;
           case "square":
-            for (row = 0, _ref3 = map.height - 2; 0 <= _ref3 ? row <= _ref3 : row >= _ref3; 0 <= _ref3 ? row++ : row--) {
-              for (col = 0, _ref4 = map.width - 2; 0 <= _ref4 ? col <= _ref4 : col >= _ref4; 0 <= _ref4 ? col++ : col--) {
-                type = "" + m[row][col][0] + m[row][col + 1][0] + m[row + 1][col][0] + m[row + 1][col + 1][0];
-                green = parseInt(m[row][col][1], 16);
-                z = 1;
-                this.tiles.push(new Tile(this.sprite, type, row, col, green, z));
-              }
-            }
-            return console.log(this.tiles);
-          case "cross":
             _results2 = [];
-            for (row = 1, _ref5 = map.height - 2; row <= _ref5; row += 2) {
+            for (row = 0, _ref3 = map.height - 2; 0 <= _ref3 ? row <= _ref3 : row >= _ref3; 0 <= _ref3 ? row++ : row--) {
               _results2.push((function() {
-                var _ref6, _results3;
+                var _ref4, _results3;
                 _results3 = [];
-                for (col = 1, _ref6 = map.width - 2; col <= _ref6; col += 2) {
-                  _results3.push(m[row][col][0] !== "00" ? (type = "" + m[row - 1][col][0] + m[row][col + 1][0] + m[row + 1][col][0] + m[row][col - 1][0], green = parseInt(m[row][col][1], 16), z = parseInt(m[row][col][2], 16), this.tiles.push(new Tile(this.sprite, type, row / 2, col / 2, green, z))) : void 0);
+                for (col = 0, _ref4 = map.width - 2; 0 <= _ref4 ? col <= _ref4 : col >= _ref4; 0 <= _ref4 ? col++ : col--) {
+                  type = "" + m[row][col][0] + m[row][col + 1][0] + m[row + 1][col][0] + m[row + 1][col + 1][0];
+                  green = parseInt(m[row][col][1], 16);
+                  z = 0;
+                  _results3.push(this.tiles.push(new Tile(this.sprite, type, row, col, green, z)));
                 }
                 return _results3;
               }).call(this));
             }
             return _results2;
+            break;
+          case "cross":
+            _results3 = [];
+            for (row = 1, _ref4 = map.height - 2; row <= _ref4; row += 2) {
+              _results3.push((function() {
+                var _ref5, _results4;
+                _results4 = [];
+                for (col = 1, _ref5 = map.width - 2; col <= _ref5; col += 2) {
+                  _results4.push(m[row][col][0] !== "00" ? (type = "" + m[row - 1][col][0] + m[row][col + 1][0] + m[row + 1][col][0] + m[row][col - 1][0], green = parseInt(m[row][col][1], 16), z = parseInt(m[row][col][2], 16), this.tiles.push(new Tile(this.sprite, type, row / 2, col / 2, green, z))) : void 0);
+                }
+                return _results4;
+              }).call(this));
+            }
+            return _results3;
         }
       }, this));
     };
@@ -328,7 +335,7 @@
       this.z = z != null ? z : 0;
     }
     Tile.prototype.isWalkable = function() {
-      return this.green === 0;
+      return this.type === "99999999";
     };
     Tile.prototype.render = function(ctx) {
       ctx.save();
@@ -501,102 +508,34 @@
     };
     return Camera;
   })();
-  Asteroids = (function() {
-    __extends(Asteroids, Game);
-    function Asteroids(width, height) {
-      Asteroids.__super__.constructor.call(this, width, height);
+  TowerMap = (function() {
+    __extends(TowerMap, Game);
+    function TowerMap(width, height) {
+      TowerMap.__super__.constructor.call(this, width, height);
       this.eventmanager = new Eventmanager;
       this.keyboard = new Keyboard;
-      this.stateManager = new Statemanager(this, ["bigbg", "jumpnrun", "iso", "maze", "height"]);
-      this.stateManager.setState("iso");
+      this.stateManager = new Statemanager(this, ["main_map"]);
+      this.stateManager.setState("main_map");
     }
-    Asteroids.prototype.update = function() {
-      Asteroids.__super__.update.call(this);
+    TowerMap.prototype.update = function() {
+      TowerMap.__super__.update.call(this);
       return this.stateManager.currentState.update(this.timer.delta);
     };
-    Asteroids.prototype.render = function() {
+    TowerMap.prototype.render = function() {
       this.ctx.clearRect(0, 0, this.width, this.height);
       this.stateManager.currentState.render(this.ctx);
-      return Asteroids.__super__.render.call(this);
+      return TowerMap.__super__.render.call(this);
     };
-    return Asteroids;
+    return TowerMap;
   })();
   $(function() {
-    var asteroids;
-    asteroids = new Asteroids(1024, 768);
-    return asteroids.start();
+    var tower_map;
+    tower_map = new TowerMap(1024, 768);
+    return tower_map.start();
   });
-  stateclass["bigbg"] = StateBigBackground = (function() {
-    __extends(StateBigBackground, State);
-    function StateBigBackground(parent) {
-      var backgroundsprite, i;
-      this.parent = parent;
-      console.log("width: " + this.parent.width + " -- height: " + this.parent.height);
-      backgroundsprite = new Sprite({
-        "texture": "assets/images/weltraum.jpg",
-        "width": 500,
-        "height": 500
-      });
-      this.background = new Background(backgroundsprite);
-      this.spaceships = [];
-      for (i = 0; i <= 3; i++) {
-        this.spaceships[i] = new Spaceship;
-      }
-    }
-    StateBigBackground.prototype.update = function(delta) {
-      var spaceship, _i, _len, _ref, _results;
-      _ref = this.spaceships;
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        spaceship = _ref[_i];
-        _results.push(spaceship.update(delta));
-      }
-      return _results;
-    };
-    StateBigBackground.prototype.render = function(ctx) {
-      var spaceship, _i, _len, _ref, _results;
-      this.background.render(ctx);
-      _ref = this.spaceships;
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        spaceship = _ref[_i];
-        _results.push(spaceship.render(ctx));
-      }
-      return _results;
-    };
-    return StateBigBackground;
-  })();
-  stateclass["height"] = StateHeight = (function() {
-    __extends(StateHeight, State);
-    function StateHeight(parent) {
-      var simple;
-      this.parent = parent;
-      simple = new Sprite({
-        "texture": "assets/images/beach3d.png",
-        "width": 107,
-        "height": 107,
-        "innerWidth": 87,
-        "innerHeight": 87,
-        "key": {
-          "00": 12,
-          "dd": 12
-        }
-      });
-      this.background = new Map({
-        "mapfile": "assets/minimap.png",
-        "pattern": "simple",
-        "sprite": simple
-      });
-    }
-    StateHeight.prototype.update = function(delta) {};
-    StateHeight.prototype.render = function(ctx) {
-      return this.background.render(ctx);
-    };
-    return StateHeight;
-  })();
-  stateclass["iso"] = StateIso = (function() {
-    __extends(StateIso, State);
-    function StateIso(parent) {
+  stateclass["main_map"] = StateMainMap = (function() {
+    __extends(StateMainMap, State);
+    function StateMainMap(parent) {
       var beach3d;
       this.parent = parent;
       this.camera = new Camera({
@@ -604,6 +543,10 @@
         "vpWidth": this.parent.width,
         "vpHeight": this.parent.height
       });
+      this.hero = new Hero(this.parent.eventmanager, this.parent.keyboard);
+      this.hero.coor = new Vector(200, 200);
+      this.hero.gravity = 0.0;
+      console.log(this.hero);
       beach3d = new Sprite({
         "texture": "assets/images/beach3d.png",
         "width": 107,
@@ -635,197 +578,17 @@
         "sprite": beach3d
       });
     }
-    StateIso.prototype.update = function(delta) {};
-    StateIso.prototype.render = function(ctx) {
-      return this.camera.apply(ctx, __bind(function() {
-        return this.background.render(ctx);
-      }, this));
-    };
-    return StateIso;
-  })();
-  stateclass["jumpnrun"] = StateJumpNRun = (function() {
-    __extends(StateJumpNRun, State);
-    function StateJumpNRun(parent) {
-      var i, jumpnrunSprite;
-      this.parent = parent;
-      this.hero = new Hero(this.parent.eventmanager, this.parent.keyboard);
-      this.camera = new Camera({
-        "projection": "normal",
-        "vpWidth": this.parent.width,
-        "vpHeight": this.parent.height
-      });
-      jumpnrunSprite = new Sprite({
-        "texture": "assets/images/jumpnrun.png",
-        "width": 100,
-        "height": 100,
-        "innerWidth": 95,
-        "innerHeight": 95,
-        "key": {
-          "00": 0,
-          "11": 1,
-          '22': 2,
-          "33": 3,
-          "44": 4,
-          '55': 5,
-          "66": 6,
-          "77": 7,
-          '88': 8,
-          "99": 9,
-          "aa": 10,
-          'bb': 11
-        }
-      });
-      this.background = new Map({
-        "mapfile": "assets/jumpnrun_map.png",
-        "pattern": "simple",
-        "sprite": jumpnrunSprite
-      });
-      this.spaceships = [];
-      for (i = 0; i <= 3; i++) {
-        this.spaceships[i] = new Spaceship(this.parent.eventmanager, this.parent.keyboard);
-      }
-    }
-    StateJumpNRun.prototype.update = function(delta) {
-      var spaceship, _i, _len, _ref, _results;
+    StateMainMap.prototype.update = function(delta) {
       this.hero.update(delta, this.background);
-      this.camera.coor = this.hero.coor;
-      _ref = this.spaceships;
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        spaceship = _ref[_i];
-        _results.push(spaceship.update(delta));
-      }
-      return _results;
+      return this.camera.coor = this.hero.coor;
     };
-    StateJumpNRun.prototype.render = function(ctx) {
+    StateMainMap.prototype.render = function(ctx) {
       return this.camera.apply(ctx, __bind(function() {
-        var spaceship, _i, _len, _ref, _results;
         this.background.render(ctx);
-        this.hero.render(ctx);
-        _ref = this.spaceships;
-        _results = [];
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          spaceship = _ref[_i];
-          _results.push(spaceship.render(ctx));
-        }
-        return _results;
+        return this.hero.render(ctx);
       }, this));
     };
-    return StateJumpNRun;
-  })();
-  stateclass["maze"] = StateMaze = (function() {
-    __extends(StateMaze, State);
-    function StateMaze(parent) {
-      var i, maze;
-      this.parent = parent;
-      maze = new Sprite({
-        "texture": "assets/images/walls.png",
-        "width": 100,
-        "height": 100,
-        "innerWidth": 50,
-        "innerHeight": 50,
-        "key": {
-          "dddddddd": 0,
-          "dd00dddd": 1,
-          "dddd00dd": 2,
-          "dddddd00": 3,
-          "00dddddd": 4,
-          "00000000": 5,
-          "00dddd00": 6,
-          "0000dddd": 7,
-          "dd0000dd": 8,
-          "dddd0000": 9,
-          "00dd00dd": 12,
-          "dd00dd00": 13,
-          "00dd0000": 14,
-          "0000dd00": 15,
-          "000000dd": 16,
-          "dd000000": 17
-        }
-      });
-      this.background = new Map({
-        "mapfile": "assets/maze.png",
-        "pattern": "cross",
-        "sprite": maze
-      });
-      this.spaceships = [];
-      for (i = 0; i <= 3; i++) {
-        this.spaceships[i] = new Spaceship;
-      }
-    }
-    StateMaze.prototype.update = function(delta) {
-      var spaceship, _i, _len, _ref, _results;
-      _ref = this.spaceships;
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        spaceship = _ref[_i];
-        _results.push(spaceship.update(delta));
-      }
-      return _results;
-    };
-    StateMaze.prototype.render = function(ctx) {
-      var spaceship, _i, _len, _ref, _results;
-      this.background.render(ctx);
-      _ref = this.spaceships;
-      _results = [];
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        spaceship = _ref[_i];
-        _results.push(spaceship.render(ctx));
-      }
-      return _results;
-    };
-    return StateMaze;
-  })();
-  Spaceship = (function() {
-    function Spaceship(eventmanager, keyboard) {
-      this.eventmanager = eventmanager;
-      this.keyboard = keyboard;
-      this.state = "normal";
-      this.sprite = new Sprite({
-        "texture": "assets/images/test.png",
-        "width": 50,
-        "height": 50
-      });
-      this.sprite.addImage("normal", Math.floor(Math.random() * 10));
-      this.coor = new Vector(Math.random() * 1024, Math.random() * 768);
-      this.speed = new Vector(0.1, 0.1);
-      if (Math.random() > 0.5) {
-        this.speed = this.speed.mult(-1);
-      }
-    }
-    Spaceship.prototype.update = function(delta) {
-      this.coor = this.coor.add(this.speed.mult(delta));
-      if (this.coor.x > 1024) {
-        this.speed.x = this.speed.x * -1;
-        this.coor.x = 1024;
-        this.eventmanager.trigger("touchdown");
-      }
-      if (this.coor.x < 0) {
-        this.speed.x = this.speed.x * -1;
-        this.coor.x = 0;
-      }
-      if (this.coor.y > 768) {
-        this.speed.y = this.speed.y * -1;
-        this.coor.y = 768;
-      }
-      if (this.coor.y < 0) {
-        this.speed.y = this.speed.y * -1;
-        return this.coor.y = 0;
-      }
-    };
-    Spaceship.prototype.touchdown = function() {
-      return console.log("Spaceship says: Touchdown");
-    };
-    Spaceship.prototype.render = function(ctx) {
-      ctx.save();
-      ctx.translate(this.coor.x, this.coor.y);
-      this.sprite.render(this.state, ctx);
-      return ctx.restore();
-    };
-    Spaceship.prototype.hello = function() {
-      return console.log("hello!");
-    };
-    return Spaceship;
+    return StateMainMap;
   })();
   Hero = (function() {
     function Hero(eventmanager, keyboard) {
@@ -841,10 +604,11 @@
           "jumping": 5
         }
       });
-      this.coor = new Vector(100, 100);
+      this.coor = new Vector(150, 200);
+      this.start_coor = this.coor;
       this.speed = new Vector(0, 0);
       this.force = 0.01;
-      this.gravity = 0.01;
+      this.gravity = 0.00;
       this.eventmanager.register("touchdown", this.touchdown);
     }
     Hero.prototype.touchdown = function() {
@@ -852,13 +616,7 @@
     };
     Hero.prototype.update = function(delta, map) {
       var walkable, _base;
-      walkable = typeof (_base = map.tileAtVector(this.coor)).isWalkable === "function" ? _base.isWalkable() : void 0;
-      if (walkable) {
-        this.speed.y += this.gravity;
-      } else {
-        this.speed.y = 0;
-        this.state = "normal";
-      }
+      console.log(map.tileAtVector(this.coor));
       if (this.keyboard.key("right")) {
         this.speed.x += this.force;
       } else if (this.keyboard.key("left")) {
@@ -866,13 +624,26 @@
       } else {
         if (this.speed.x > 0) {
           this.speed.x -= this.force;
-        } else {
-          this.speed.x += this.force;
         }
       }
-      if (this.keyboard.key("space") && this.state !== "jumping") {
-        this.state = "jumping";
-        this.speed.y = -0.5;
+      if (this.keyboard.key("up")) {
+        this.speed.y -= this.force;
+      } else if (this.keyboard.key("down")) {
+        this.speed.y += this.force;
+      } else {
+        if (this.speed.y > 0) {
+          this.speed.y -= this.force;
+        }
+      }
+      walkable = typeof (_base = map.tileAtVector(this.coor)).isWalkable === "function" ? _base.isWalkable() : void 0;
+      if (!walkable) {
+        this.coor = this.start_coor;
+        this.speed.y = 0;
+        this.speed.x = 0;
+      }
+      if (this.keyboard.key("up")) {
+        this.speed.y -= 0.0;
+        this.speed.x -= 0.0;
       }
       return this.coor = this.coor.add(this.speed.mult(delta));
     };

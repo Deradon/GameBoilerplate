@@ -16,27 +16,22 @@ libFiles  = [
   'lib/camera'
 ]
 
-appFiles = [
-  'demo/asteroids'
-  'demo/demostate_bigbackground'
-  'demo/demostate_height'
-  'demo/demostate_iso'
-  'demo/demostate_jumpnrun'
-  'demo/demostate_maze'
-  'demo/spaceship'
-  'demo/hero'
-]
-
 #appFiles = [
-#  'tower_map/tower_map'
-##  'demo/demostate_bigbackground'
-##  'demo/demostate_height'
-##  'demo/demostate_iso'
-##  'demo/demostate_jumpnrun'
-##  'demo/demostate_maze'
-##  'demo/spaceship'
-##  'demo/hero'
+#  'demo/asteroids'
+#  'demo/demostate_bigbackground'
+#  'demo/demostate_height'
+#  'demo/demostate_iso'
+#  'demo/demostate_jumpnrun'
+#  'demo/demostate_maze'
+#  'demo/spaceship'
+#  'demo/hero'
 #]
+
+appFiles = [
+  'tower_map/tower_map'
+  'tower_map/main_map'
+  'tower_map/hero'
+]
 
 task 'build:coffee', 'Build single application file from source files', ->
   files = libFiles.concat appFiles

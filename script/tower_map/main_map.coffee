@@ -1,5 +1,5 @@
 
-stateclass["iso"] = class StateIso extends State
+stateclass["main_map"] = class StateMainMap extends State
   constructor: (@parent) ->
     @camera = new Camera {"projection": "iso", "vpWidth": @parent.width, "vpHeight": @parent.height}
 

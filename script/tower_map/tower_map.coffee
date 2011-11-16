@@ -11,21 +11,21 @@ class TowerMap extends Game
     @eventmanager = new Eventmanager
     @keyboard = new Keyboard
 
-    #@stateManager = new Statemanager this, ["bigbg", "jumpnrun", "iso", "maze", "height"] # Add your own Gamestates or Levels
-    #@stateManager.setState "jumpnrun"
+    @stateManager = new Statemanager this, ["main_map"]
+    @stateManager.setState "main_map"
 
 
   update: ->
     super()
-    #@stateManager.currentState.update @timer.delta
+    @stateManager.currentState.update @timer.delta
 
   render: ->
-    #@ctx.clearRect 0, 0, @width, @height
-    #@stateManager.currentState.render @ctx
+    @ctx.clearRect 0, 0, @width, @height
+    @stateManager.currentState.render @ctx
     super()
 
 
-#$ ->
-#  asteroids = new Asteroids( 1024, 768 )
-#  asteroids.start()
+$ ->
+  tower_map = new TowerMap( 1024, 768 )
+  tower_map.start()
 
