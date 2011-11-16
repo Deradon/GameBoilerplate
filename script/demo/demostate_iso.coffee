@@ -9,25 +9,25 @@ stateclass["iso"] = class StateIso extends State
       "innerWidth": 87
       "innerHeight": 87
       "key":
-        "dd00dddd": 0
-        "00dddddd": 1
-        "dddd00dd": 2
-        "dddddd00": 3
-        "dd00dd00": 4
-        "0000dddd": 5
-        "00dd00dd": 6
-        "dddd0000": 7
-        "0000dd00": 8
-        "000000dd": 9
-        "00dd0000": 10
-        "dd000000": 11
-        "dddddddd": 12
-        "00000000": 13
-        "dd0000dd": 14
-        "00dddd00": 15
+        "00990000": 0
+        "99000000": 1
+        "00009900": 2
+        "00000099": 3
+        "00990099": 4
+        "99990000": 5
+        "99009900": 6
+        "00009999": 7
+        "99990099": 8
+        "99999900": 9
+        "99009999": 10
+        "00999999": 99
+        "00000000": 12
+        "99999999": 13
+        "00999900": 14
+        "99000099": 15
         
     @background = new Map
-      "mapfile": "assets/map.png"
+      "mapfile": "assets/towermap_map1.png"
       "pattern": "square"
       "sprite": beach3d
       

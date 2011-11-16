@@ -248,7 +248,7 @@
       map.src = file;
       m = [];
       return $(map).load(__bind(function() {
-        var canvas, col, ctx, data, green, i, p, row, type, z, _len, _ref, _ref2, _ref3, _ref4, _results, _results2, _results3, _step, _step2;
+        var canvas, col, ctx, data, green, i, p, row, type, z, _len, _ref, _ref2, _ref3, _ref4, _results, _results2, _results3, _step;
         canvas = document.createElement("canvas");
         this.width = map.width;
         this.height = map.height;
@@ -260,11 +260,9 @@
         for (i = 0, _len = data.length, _step = 4; i < _len; i += _step) {
           p = data[i];
           row = Math.floor((i / 4) / map.width);
-                    if ((_ref = m[row]) != null) {
-            _ref;
-          } else {
+          if ((_ref = m[row]) == null) {
             m[row] = [];
-          };
+          }
           m[row].push([Number(data[i]).toHex(), Number(data[i + 1]).toHex(), Number(data[i + 2]).toHex(), Number(data[i + 3]).toHex()]);
         }
         switch (pattern) {
@@ -304,11 +302,11 @@
             break;
           case "cross":
             _results3 = [];
-            for (row = 1, _ref4 = map.height - 2, _step2 = 2; 1 <= _ref4 ? row <= _ref4 : row >= _ref4; row += _step2) {
+            for (row = 1, _ref4 = map.height - 2; row <= _ref4; row += 2) {
               _results3.push((function() {
-                var _ref5, _results4, _step3;
+                var _ref5, _results4;
                 _results4 = [];
-                for (col = 1, _ref5 = map.width - 2, _step3 = 2; 1 <= _ref5 ? col <= _ref5 : col >= _ref5; col += _step3) {
+                for (col = 1, _ref5 = map.width - 2; col <= _ref5; col += 2) {
                   _results4.push(m[row][col][0] !== "00" ? (type = "" + m[row - 1][col][0] + m[row][col + 1][0] + m[row + 1][col][0] + m[row][col - 1][0], green = parseInt(m[row][col][1], 16), z = parseInt(m[row][col][2], 16), this.tiles.push(new Tile(this.sprite, type, row / 2, col / 2, green, z))) : void 0);
                 }
                 return _results4;
@@ -517,7 +515,7 @@
       this.eventmanager = new Eventmanager;
       this.keyboard = new Keyboard;
       this.stateManager = new Statemanager(this, ["bigbg", "jumpnrun", "iso", "maze", "height"]);
-      this.stateManager.setState("jumpnrun");
+      this.stateManager.setState("iso");
     }
     Asteroids.prototype.update = function() {
       Asteroids.__super__.update.call(this);
@@ -615,26 +613,26 @@
         "innerWidth": 87,
         "innerHeight": 87,
         "key": {
-          "dd00dddd": 0,
-          "00dddddd": 1,
-          "dddd00dd": 2,
-          "dddddd00": 3,
-          "dd00dd00": 4,
-          "0000dddd": 5,
-          "00dd00dd": 6,
-          "dddd0000": 7,
-          "0000dd00": 8,
-          "000000dd": 9,
-          "00dd0000": 10,
-          "dd000000": 11,
-          "dddddddd": 12,
-          "00000000": 13,
-          "dd0000dd": 14,
-          "00dddd00": 15
+          "00990000": 0,
+          "99000000": 1,
+          "00009900": 2,
+          "00000099": 3,
+          "00990099": 4,
+          "99990000": 5,
+          "99009900": 6,
+          "00009999": 7,
+          "99990099": 8,
+          "99999900": 9,
+          "99009999": 10,
+          "00999999": 99,
+          "00000000": 12,
+          "99999999": 13,
+          "00999900": 14,
+          "99000099": 15
         }
       });
       this.background = new Map({
-        "mapfile": "assets/map.png",
+        "mapfile": "assets/towermap_map1.png",
         "pattern": "square",
         "sprite": beach3d
       });
