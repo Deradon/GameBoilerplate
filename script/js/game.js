@@ -317,11 +317,19 @@
       }, this));
     };
     Map.prototype.tileAtVector = function(vec) {
-      var index, x, y;
-      x = Math.floor(vec.x / this.sprite.innerWidth);
-      y = Math.floor(vec.y / this.sprite.innerHeight);
-      index = y * this.width + x;
-      return this.tiles[index];
+      var col, row, tile, _i, _len, _ref;
+      col = Math.floor(vec.x / this.sprite.innerWidth);
+      row = Math.floor(vec.y / this.sprite.innerHeight);
+      _ref = this.tiles;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        tile = _ref[_i];
+        if (tile.col === col && tile.row === row) {
+          return tile;
+        }
+      }
+    };
+    Map.prototype.vectorAtTile = function(col, row) {
+      return new Vector(this.sprite.innerWidth * (col + 0.5), this.sprite.innerHeight * (row + 0.5));
     };
     return Map;
   })();
@@ -543,10 +551,6 @@
         "vpWidth": this.parent.width,
         "vpHeight": this.parent.height
       });
-      this.hero = new Hero(this.parent.eventmanager, this.parent.keyboard);
-      this.hero.coor = new Vector(200, 200);
-      this.hero.gravity = 0.0;
-      console.log(this.hero);
       beach3d = new Sprite({
         "texture": "assets/images/beach3d.png",
         "width": 107,
@@ -572,26 +576,32 @@
           "99000099": 15
         }
       });
-      this.background = new Map({
+      this.map = new Map({
         "mapfile": "assets/towermap_map1.png",
         "pattern": "square",
         "sprite": beach3d
       });
+      this.hero = new Hero(this.parent.eventmanager, this.parent.keyboard, {
+        "coor": this.map.vectorAtTile(2, 0)
+      });
+      this.hero.gravity = 0.0;
+      console.log(this.map);
+      console.log(this.hero);
     }
     StateMainMap.prototype.update = function(delta) {
-      this.hero.update(delta, this.background);
+      this.hero.update(delta, this.map);
       return this.camera.coor = this.hero.coor;
     };
     StateMainMap.prototype.render = function(ctx) {
       return this.camera.apply(ctx, __bind(function() {
-        this.background.render(ctx);
+        this.map.render(ctx);
         return this.hero.render(ctx);
       }, this));
     };
     return StateMainMap;
   })();
   Hero = (function() {
-    function Hero(eventmanager, keyboard) {
+    function Hero(eventmanager, keyboard, options) {
       this.eventmanager = eventmanager;
       this.keyboard = keyboard;
       this.state = "normal";
@@ -604,7 +614,7 @@
           "jumping": 5
         }
       });
-      this.coor = new Vector(200, 300);
+      this.coor = options["coor"];
       this.start_coor = this.coor;
       this.speed = new Vector(0, 0);
       this.force = 0.01;
@@ -615,8 +625,9 @@
       return console.log("Hero says: Touchdown occurred");
     };
     Hero.prototype.update = function(delta, map) {
-      var walkable, _base;
-      console.log(map.tileAtVector(this.coor));
+      var tile;
+      tile = map.tileAtVector(this.coor);
+      $("#debug").html("" + tile.row + " - " + tile.col);
       if (this.keyboard.key("right")) {
         this.speed.x += this.force;
       } else if (this.keyboard.key("left")) {
@@ -635,8 +646,9 @@
           this.speed.y -= this.force;
         }
       }
-      walkable = typeof (_base = map.tileAtVector(this.coor)).isWalkable === "function" ? _base.isWalkable() : void 0;
-      if (!walkable) {
+      if (!(typeof tile.isWalkable === "function" ? tile.isWalkable() : void 0)) {
+        $("#debug-last-tile").html("" + tile.row + " - " + tile.col);
+        console.log(tile);
         this.coor = this.start_coor;
         this.speed.y = 0;
         this.speed.x = 0;

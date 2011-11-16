@@ -1,7 +1,7 @@
 
 
 class Hero
-  constructor: (@eventmanager, @keyboard) ->
+  constructor: (@eventmanager, @keyboard, options) ->
 
     @state = "normal"
     @sprite = new Sprite
@@ -12,7 +12,7 @@ class Hero
         "normal": 3
         "jumping": 5
 
-    @coor = new Vector( 200, 300 )
+    @coor = options["coor"]
     @start_coor = @coor
     @speed = new Vector( 0, 0 )
     @force = 0.01
@@ -25,7 +25,8 @@ class Hero
     console.log "Hero says: Touchdown occurred"
 
   update: (delta, map) ->
-    console.log map.tileAtVector(@coor)
+    tile = map.tileAtVector(@coor)
+    $("#debug").html("#{tile.row} - #{tile.col}")
 
     # left/right movement
     if @keyboard.key("right")
@@ -51,8 +52,9 @@ class Hero
 #        @speed.y += @force
 
     # apply gravity
-    walkable = map.tileAtVector(@coor).isWalkable?()
-    if !walkable
+    if !tile.isWalkable?()
+      $("#debug-last-tile").html("#{tile.row} - #{tile.col}")
+      console.log tile
       @coor = @start_coor
       @speed.y = 0
       @speed.x = 0
