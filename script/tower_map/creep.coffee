@@ -24,8 +24,8 @@ class Creep
 
   update: (delta, map) ->
     tile = map.tileAtVector(@coor)
-    if !tile.isWalkable?()
-
+    #if !tile.isWalkable?()
+    
     @coor = @coor.add( @speed.mult delta )
     @last_tile = tile
     

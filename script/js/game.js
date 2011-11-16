@@ -1,5 +1,5 @@
 (function() {
-  var Animation, Background, Camera, Eventmanager, Game, Keyboard, Map, Shape, Sprite, State, StateMainMap, Statemanager, Tile, Timer, TowerMap, Vector, root, stateclass;
+  var Animation, Background, Camera, Creep, Eventmanager, Game, Hero, Keyboard, Map, Shape, Sprite, State, StateMainMap, Statemanager, Tile, Timer, TowerMap, Vector, root, stateclass;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
     function ctor() { this.constructor = child; }
@@ -596,5 +596,114 @@
       }, this));
     };
     return StateMainMap;
+  })();
+  Hero = (function() {
+    function Hero(eventmanager, keyboard, options) {
+      this.eventmanager = eventmanager;
+      this.keyboard = keyboard;
+      this.state = "normal";
+      this.sprite = new Sprite({
+        "texture": "assets/images/test.png",
+        "width": 50,
+        "height": 50,
+        "key": {
+          "normal": 3,
+          "jumping": 5
+        }
+      });
+      this.coor = options["coor"];
+      this.start_coor = this.coor;
+      this.speed = new Vector(0, 0);
+      this.force = 0.01;
+      this.gravity = 0.00;
+      this.eventmanager.register("touchdown", this.touchdown);
+    }
+    Hero.prototype.touchdown = function() {
+      return console.log("Hero says: Touchdown occurred");
+    };
+    Hero.prototype.update = function(delta, map) {
+      var tile;
+      tile = map.tileAtVector(this.coor);
+      $("#debug").html("" + tile.row + " - " + tile.col);
+      if (this.keyboard.key("right")) {
+        this.speed.x += this.force;
+      } else if (this.keyboard.key("left")) {
+        this.speed.x -= this.force;
+      } else {
+        if (this.speed.x > 0) {
+          this.speed.x -= this.force;
+        } else {
+          this.speed.x += this.force;
+        }
+      }
+      if (this.keyboard.key("up")) {
+        this.speed.y -= this.force;
+      } else if (this.keyboard.key("down")) {
+        this.speed.y += this.force;
+      } else {
+        if (this.speed.y > 0) {
+          this.speed.y -= this.force;
+        } else {
+          this.speed.y += this.force;
+        }
+      }
+      if (!(typeof tile.isWalkable === "function" ? tile.isWalkable() : void 0)) {
+        $("#debug-last-tile").html("" + tile.row + " - " + tile.col);
+        console.log(tile);
+        this.coor = this.start_coor;
+        this.speed.y = 0;
+        this.speed.x = 0;
+      }
+      if (this.keyboard.key("up")) {
+        this.speed.y -= 0.0;
+        this.speed.x -= 0.0;
+      }
+      return this.coor = this.coor.add(this.speed.mult(delta));
+    };
+    Hero.prototype.render = function(ctx) {
+      ctx.save();
+      ctx.translate(this.coor.x, this.coor.y);
+      this.sprite.render(this.state, ctx);
+      return ctx.restore();
+    };
+    return Hero;
+  })();
+  Creep = (function() {
+    function Creep(eventmanager, options) {
+      this.eventmanager = eventmanager;
+      this.state = "normal";
+      this.sprite = new Sprite({
+        "texture": "assets/images/test.png",
+        "width": 50,
+        "height": 50,
+        "key": {
+          "normal": 3,
+          "jumping": 5
+        }
+      });
+      this.coor = options["coor"];
+      this.start_coor = this.coor;
+      if (options["speed"]) {
+        this.speed = options["speed"];
+      } else {
+        this.speed = new Vector(0, 0);
+      }
+      this.force = 0.00;
+      this.last_tile = null;
+      this.gravity = 0.00;
+    }
+    Creep.prototype.update = function(delta, map) {
+      var tile;
+      tile = map.tileAtVector(this.coor);
+      this.coor = this.coor.add(this.speed.mult(delta));
+      return this.last_tile = tile;
+    };
+    Creep.prototype.render = function(ctx) {
+      ctx.save();
+      ctx.translate(this.coor.x, this.coor.y);
+      this.sprite.render(this.state, ctx);
+      return ctx.restore();
+    };
+    return Creep;
   })();
 }).call(this);
