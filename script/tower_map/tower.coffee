@@ -14,14 +14,20 @@ class Tower
 
     @coor        = options["coor"]
     @hp          = options["hp"] ? 100
-    @range       = options["range"] ? 200
+    @range       = options["range"] ? 250
+    @range       *= @range
     @last_target = null
-    @scan_rate   = options["scan_rate"] ? 2000
+    @scan_rate   = options["scan_rate"] ? 500
     @fire_rate   = options["fire_rate"] ? 1000
     @damage      = options["damage"] ? 100
 
-  update: (delta) ->
-    #console.log delta
+    @current_scan_rate = 0
+
+  update: (delta, hero) ->
+    @current_scan_rate += delta
+    if @current_scan_rate >= @scan_rate
+      @current_scan_rate = @scan_rate - @current_scan_rate
+      @scan(hero)
 
 
   render: (ctx) ->
@@ -29,4 +35,11 @@ class Tower
     ctx.translate @coor.x, @coor.y
     @sprite.render( @state, ctx )
     ctx.restore()
+
+  scan: (hero) ->
+    dist = @coor.subtract(hero.coor).lengthSquared()
+    if dist < @range
+      @state = "attacking"
+    else
+      @state = "normal"
 

@@ -549,7 +549,7 @@
       var beach3d;
       this.parent = parent;
       this.camera = new Camera({
-        "projection": "normal",
+        "projection": "iso",
         "vpWidth": this.parent.width,
         "vpHeight": this.parent.height
       });
@@ -589,7 +589,7 @@
       this.hero.gravity = 0.0;
       this.creep = new Creep(this.parent.eventmanager, {
         "coor": this.map.vectorAtTile(2, 0),
-        "speed": new Vector(0, 0.1)
+        "speed": new Vector(0, 0.001)
       });
       this.towers = [];
       this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
@@ -598,6 +598,30 @@
       this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
         "coor": this.map.vectorAtTile(5, 5)
       }));
+      this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
+        "coor": this.map.vectorAtTile(9, 3)
+      }));
+      this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
+        "coor": this.map.vectorAtTile(10, 3)
+      }));
+      this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
+        "coor": this.map.vectorAtTile(10, 6)
+      }));
+      this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
+        "coor": this.map.vectorAtTile(10, 10)
+      }));
+      this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
+        "coor": this.map.vectorAtTile(9, 10)
+      }));
+      this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
+        "coor": this.map.vectorAtTile(4, 9)
+      }));
+      this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
+        "coor": this.map.vectorAtTile(0, 14)
+      }));
+      this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
+        "coor": this.map.vectorAtTile(4, 14)
+      }));
     }
     StateMainMap.prototype.update = function(delta) {
       var tower, _i, _len, _ref;
@@ -605,7 +629,7 @@
       _ref = this.towers;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         tower = _ref[_i];
-        tower.update(delta);
+        tower.update(delta, this.hero);
       }
       this.camera.coor = this.hero.coor;
       return this.creep.update(delta, this.map);
@@ -705,18 +729,35 @@
       });
       this.coor = options["coor"];
       this.hp = (_ref = options["hp"]) != null ? _ref : 100;
-      this.range = (_ref2 = options["range"]) != null ? _ref2 : 200;
+      this.range = (_ref2 = options["range"]) != null ? _ref2 : 250;
+      this.range *= this.range;
       this.last_target = null;
-      this.scan_rate = (_ref3 = options["scan_rate"]) != null ? _ref3 : 2000;
+      this.scan_rate = (_ref3 = options["scan_rate"]) != null ? _ref3 : 500;
       this.fire_rate = (_ref4 = options["fire_rate"]) != null ? _ref4 : 1000;
       this.damage = (_ref5 = options["damage"]) != null ? _ref5 : 100;
+      this.current_scan_rate = 0;
     }
-    Tower.prototype.update = function(delta) {};
+    Tower.prototype.update = function(delta, hero) {
+      this.current_scan_rate += delta;
+      if (this.current_scan_rate >= this.scan_rate) {
+        this.current_scan_rate = this.scan_rate - this.current_scan_rate;
+        return this.scan(hero);
+      }
+    };
     Tower.prototype.render = function(ctx) {
       ctx.save();
       ctx.translate(this.coor.x, this.coor.y);
       this.sprite.render(this.state, ctx);
       return ctx.restore();
+    };
+    Tower.prototype.scan = function(hero) {
+      var dist;
+      dist = this.coor.subtract(hero.coor).lengthSquared();
+      if (dist < this.range) {
+        return this.state = "attacking";
+      } else {
+        return this.state = "normal";
+      }
     };
     return Tower;
   })();
