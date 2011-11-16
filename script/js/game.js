@@ -643,7 +643,7 @@
       this.decay = 0.95;
     }
     Hero.prototype.update = function(delta, map) {
-      var diff, new_coor, tile, _base;
+      var new_coor, tile, walkable, _base, _base2;
       tile = map.tileAtVector(this.coor);
       $("#debug").html("" + tile.row + " - " + tile.col);
       if (this.keyboard.key("right")) {
@@ -661,17 +661,17 @@
         this.speed.y *= this.decay;
       }
       new_coor = this.coor.add(this.speed.mult(delta));
-      if (typeof (_base = map.tileAtVector(new_coor)).isWalkable === "function" ? _base.isWalkable() : void 0) {
+      walkable = typeof (_base = map.tileAtVector(new_coor)).isWalkable === "function" ? _base.isWalkable() : void 0;
+      if (typeof (_base2 = map.tileAtVector(new_coor)).isWalkable === "function" ? _base2.isWalkable() : void 0) {
         this.coor = new_coor;
       } else {
         $("#debug-last-tile").html("" + tile.row + " - " + tile.col);
-        diff = new_coor.subtract(this.coor);
         this.speed.y = 0;
         this.speed.x = 0;
       }
-      if (this.keyboard.key("up")) {
-        this.speed.y -= 0.0;
-        return this.speed.x -= 0.0;
+      if (this.keyboard.key("space")) {
+        this.speed.y = 0.0;
+        return this.speed.x = 0.0;
       }
     };
     Hero.prototype.render = function(ctx) {
@@ -684,19 +684,26 @@
   })();
   Tower = (function() {
     function Tower(eventmanager, keyboard, options) {
+      var _ref, _ref2, _ref3, _ref4, _ref5;
       this.eventmanager = eventmanager;
       this.keyboard = keyboard;
       this.state = "normal";
       this.sprite = new Sprite({
-        "texture": "assets/images/test.png",
+        "texture": "assets/images/enemies.png",
         "width": 50,
         "height": 50,
         "key": {
-          "normal": 3,
-          "jumping": 5
+          "normal": 7,
+          "attacking": 3
         }
       });
       this.coor = options["coor"];
+      this.hp = (_ref = options["hp"]) != null ? _ref : 100;
+      this.range = (_ref2 = options["range"]) != null ? _ref2 : 200;
+      this.last_target = null;
+      this.scan_rate = (_ref3 = options["scan_rate"]) != null ? _ref3 : 2000;
+      this.fire_rate = (_ref4 = options["fire_rate"]) != null ? _ref4 : 1000;
+      this.damage = (_ref5 = options["damage"]) != null ? _ref5 : 100;
     }
     Tower.prototype.update = function(delta) {};
     Tower.prototype.render = function(ctx) {

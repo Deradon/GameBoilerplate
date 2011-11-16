@@ -41,21 +41,20 @@ class Hero
     else
       @speed.y *= @decay
 
-    # apply gravity
+
     new_coor = @coor.add( @speed.mult delta )
+    walkable = map.tileAtVector(new_coor).isWalkable?()
     if map.tileAtVector(new_coor).isWalkable?()
       @coor = new_coor
     else
       $("#debug-last-tile").html("#{tile.row} - #{tile.col}")
-      diff = new_coor.subtract(@coor)
-      #console.log diff
 
       @speed.y = 0
       @speed.x = 0
 
-    if @keyboard.key("up")
-      @speed.y -= 0.0
-      @speed.x -= 0.0
+    if @keyboard.key("space")
+      @speed.y = 0.0
+      @speed.x = 0.0
 
 #    # jump
 #    if @keyboard.key("space") and @state isnt "jumping"

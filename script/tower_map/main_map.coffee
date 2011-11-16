@@ -2,7 +2,7 @@
 stateclass["main_map"] = class StateMainMap extends State
   constructor: (@parent) ->
     @camera = new Camera {"projection": "normal", "vpWidth": @parent.width, "vpHeight": @parent.height}
-    #@camera = new Camera {"projection": "iso", "vpWidth": @parent.width, "vpHeight": @parent.height}
+#    @camera = new Camera {"projection": "iso", "vpWidth": @parent.width, "vpHeight": @parent.height}
 
     beach3d = new Sprite
       "texture": "assets/images/beach3d.png"
