@@ -47,6 +47,7 @@ class Map
               green = parseInt( m[row][col][1], 16 )
               z = 0#parseInt( m[row][col][2], 16 )
               @tiles.push( new Tile( @sprite, type, row, col, green, z ))
+          #console.log @tiles #HACK
         when "cross"
           for row in [1..map.height-2] by 2
             for col in [1..map.width-2] by 2
@@ -57,10 +58,17 @@ class Map
                 @tiles.push( new Tile( @sprite, type, row/2, col/2, green, z ))
 
   tileAtVector: (vec) ->
-    x = Math.floor( vec.x / @sprite.innerWidth )
-    y = Math.floor( vec.y / @sprite.innerHeight )
-    index = y * @width + x
-    return @tiles[index]
+    col = Math.floor( vec.x / @sprite.innerWidth )
+    row = Math.floor( vec.y / @sprite.innerHeight )
+#    index = row * @width + col
+#    return @tiles[index]
+    for tile in @tiles
+      if tile.col == col && tile.row == row
+        return tile
+
+  # HACK
+  vectorAtTile: (col, row) ->
+    return new Vector(@sprite.innerWidth*(col+0.5), @sprite.innerHeight*(row+0.5))
 
 class Tile
   constructor: (@sprite, @type, @row, @col, @green=0, @z=0) ->
