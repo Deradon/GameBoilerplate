@@ -5,9 +5,57 @@ stateclass["main_map"] = class StateMainMap extends State
     @camera = new Camera {"projection": "iso", "vpWidth": @parent.width, "vpHeight": @parent.height}
 
     @creeps   = []
-    @lives    = 3
+    @lives    = 20
+    @gameover = false
+    @gold     = 500
     @spawners = []
     @towers   = []
+    @won = false
+
+    @level = 1
+    @creep_levels = []
+    @creep_levels[0] = {
+      "creep": new Creep(@parent.eventmanager, {
+        "speed_factor": 0.1
+        "skin": 0
+        "hp": 500
+      }),
+      "amount": 5,
+      "spawn_rate": 1000
+    }
+
+    console.log @creep_levels[0]["creep"]
+
+    @creep_levels[1] = {
+      "creep": new Creep(@parent.eventmanager, {
+        "speed_factor": 0.2
+        "skin": 4
+        "hp": 1000
+      }),
+      "amount": 10,
+      "spawn_rate": 1000
+    }
+
+    @creep_levels[2] = {
+      "creep": new Creep(@parent.eventmanager, {
+        "speed_factor": 0.25
+        "skin": 6
+        "hp": 1500
+      }),
+      "amount": 20,
+      "spawn_rate": 1000
+    }
+
+    @creep_levels[3] = {
+      "creep": new Creep(@parent.eventmanager, {
+        "speed_factor": 0.3
+        "skin": 1
+        "hp": 5000
+      }),
+      "amount": 5,
+      "spawn_rate": 200
+    }
+
 
     @garbage_every = 31
     @garbage_count = 0
@@ -42,72 +90,92 @@ stateclass["main_map"] = class StateMainMap extends State
       "sprite": beach3d
       "callback": =>
 
-        #while @map["tiles"].length == 0
-        #  console.log("wait");
-        #window.setTimeout('console.log("wait")',5000);
-        #console.log(@map)
-        #console.log(@map.tiles)
-        #tiles = @map.tiles
-        #console.log(tiles)
-        #console.log(tiles[5])
         for tile in @map.tiles
           if tile.isSpawner()
-            @creep = new Creep @parent.eventmanager, {"coor": @map.vectorAtTile(tile.col,tile.row), "speed": new Vector(0,0.07)}
-            @spawner = new Spawner @creep, @creeps, 5
+            #@creep = new Creep @parent.eventmanager, {"coor": @map.vectorAtTile(tile.col,tile.row), "speed": new Vector(0,0.07)}
+            @spawner = new Spawner @creep_levels[@level-1]["creep"], @creeps, @creep_levels[@level-1]["amount"], @map.vectorAtTile(tile.col,tile.row), @creep_levels[@level-1]["spawn_rate"]
             @spawners.push(@spawner)
           if tile.isHeroSpawner()
             @hero = new Hero @towers, @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(tile.col,tile.row)
 
-        # DEBUG TOWERS
-#        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(4,5)
-#        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(5,5)
-#        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(9,3)
-#        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(10,3)
-#        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(10,6)
-#        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(10,10)
-#        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(9,10)
-#        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(4,9)
-#        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(0,14)
-#        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(4,14)
+
+        @parent.eventmanager.register "gain_gold", =>
+          @gold += 50
+
+          creeps_dead = true
+          for creep in @creeps
+            if creep.state == "normal"
+              creeps_dead = false
+
+          if creeps_dead
+            @creeps = []
+            if @level < @creep_levels.length
+              @level += 1
+              for spawner in @spawners
+                spawner.new_level @creep_levels[@level-1]["creep"], @creeps, @creep_levels[@level-1]["amount"], @creep_levels[@level-1]["spawn_rate"]
+            else
+              @won = true
+
 
 
   update: (delta) ->
-    @hero.update(delta, @map)
+    if !@gameover
+      @gold = @hero.update(delta, @map, @gold)
+      @camera.coor = @hero.coor
+    else
+      @camera.coor = @creeps[0].coor
 
     # DEBUG TOWER
     for tower in @towers
       tower.update(delta, @creeps)
 
-    @camera.coor = @hero.coor
     for spawner in @spawners
       spawner.update(delta, @map)
 
     for creep in @creeps
       if creep.state == "done"
         if creep.checkout == false
-          @lives -=
+          if @lives > 0
+            @lives -= 1
+          else
+            @gameover = true
           creep.checkout = true
       else
         creep.update(delta, @map)
-
-    if @lives < 0
-      console.log("EPIC FAIL YOU NOOB")
-
     @gc()
 
   render: (ctx) ->
     @camera.apply ctx, =>
       @map.render(ctx)
       #@creep.render(ctx)
-      @hero.render(ctx)
+
 
       # DEBUG TOWER
-      for tower in @towers
-        tower.render(ctx)
       for creep in @creeps
         creep.render(ctx)
+      for tower in @towers
+        tower.render(ctx)
+      if !@gameover
+        @hero.render(ctx)
 
-  gc: ->
+    if @gameover
+      ctx.font = 'bold 70px Arial, sans-serif'
+      ctx.fillText( "GAME OVER", 190, 300 )
+      ctx.strokeText( "GAME OVER", 190, 300 )
+    else
+      if @won
+        ctx.font = 'bold 70px Arial, sans-serif'
+        ctx.fillText( "YOU WON !!!", 190, 300 )
+        ctx.strokeText( "YOU WON !!!", 190, 300 )
+      else
+        ctx.fillText( "Leben: #{@lives}", 20, 40 )
+        ctx.strokeText( "Leben: #{@lives}", 20, 40 )
+        ctx.fillText( "Gold: #{@gold}", 20, 75 )
+        ctx.strokeText( "Gold: #{@gold}", 20, 75 )
+        ctx.fillText( "Level: #{@level}", 20, 110 )
+        ctx.strokeText( "Level: #{@level}", 20, 110 )
+
+  gc: =>
     # Remove Bullets
     @garbage_count += 1
     if @garbage_count > @garbage_every

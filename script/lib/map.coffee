@@ -106,7 +106,6 @@ class Tile
     @builded = false
     
   isWalkable: ->
-    #@green is 0
     @type is "99999999"
 
   isSpawner: ->

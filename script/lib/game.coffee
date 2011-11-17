@@ -2,10 +2,11 @@
 
 class Game
   constructor: (@width, @height) ->
-    canvas = $('<canvas/>').attr({"width": @width, "height": @height})
+    canvas = $('<canvas />').attr({"width": @width, "height": @height})
     $("body").append(canvas)
     @ctx = canvas[0].getContext('2d')
-    @ctx.font = '400 18px Helvetica, sans-serif'
+    @ctx.font = 'bold 36px Arial, sans-serif'
+    @ctx.fillStyle = "#ffffff"
     @loop = null
     @timer = new Timer
 
@@ -23,5 +24,7 @@ class Game
     @timer.punch()
 
   render: ->
-    @ctx.fillText( @timer.fps().toFixed(1), 20, 20 )
+    #@ctx.fillText( @timer.fps().toFixed(1), 20, 40 )
+    #@ctx.strokeText( @timer.fps().toFixed(1), 20, 40 )
+
 
