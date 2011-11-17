@@ -39,7 +39,9 @@ class Tower
 
   render: (ctx) ->
     ctx.save()
-    ctx.translate @coor.x, @coor.y
+    ctx.translate @coor.x-90, @coor.y-30
+    ctx.rotate -(Math.PI/4)
+    ctx.scale 1, 1/0.4 
     @sprite.render( @state, ctx )
     ctx.restore()
     for bullet in @bullets

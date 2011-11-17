@@ -196,13 +196,14 @@
       this.width = width;
       this.height = height;
       this.gameloop = __bind(this.gameloop, this);
-      canvas = $('<canvas/>').attr({
+      canvas = $('<canvas />').attr({
         "width": this.width,
         "height": this.height
       });
       $("body").append(canvas);
       this.ctx = canvas[0].getContext('2d');
-      this.ctx.font = '400 18px Helvetica, sans-serif';
+      this.ctx.font = 'bold 36px Arial, sans-serif';
+      this.ctx.fillStyle = "#ffffff";
       this.loop = null;
       this.timer = new Timer;
     }
@@ -219,9 +220,7 @@
     Game.prototype.update = function() {
       return this.timer.punch();
     };
-    Game.prototype.render = function() {
-      return this.ctx.fillText(this.timer.fps().toFixed(1), 20, 20);
-    };
+    Game.prototype.render = function() {};
     return Game;
   })();
   Map = (function() {
@@ -598,7 +597,9 @@
         "vpHeight": this.parent.height
       });
       this.creeps = [];
-      this.lives = 3;
+      this.lives = 0;
+      this.gameover = false;
+      this.gold = 500;
       this.spawners = [];
       this.towers = [];
       this.garbage_every = 30;
@@ -656,13 +657,17 @@
     }
     StateMainMap.prototype.update = function(delta) {
       var creep, spawner, tower, _i, _j, _k, _len, _len2, _len3, _ref, _ref2, _ref3;
-      this.hero.update(delta, this.map);
+      if (!this.gameover) {
+        this.gold = this.hero.update(delta, this.map, this.gold);
+        this.camera.coor = this.hero.coor;
+      } else {
+        this.camera.coor = this.creeps[0].coor;
+      }
       _ref = this.towers;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         tower = _ref[_i];
         tower.update(delta, this.creeps);
       }
-      this.camera.coor = this.hero.coor;
       _ref2 = this.spawners;
       for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
         spawner = _ref2[_j];
@@ -673,35 +678,49 @@
         creep = _ref3[_k];
         if (creep.state === "done") {
           if (creep.checkout === false) {
-            this.lives -= creep.checkout = true;
+            if (this.lives > 0) {
+              this.lives -= 1;
+            } else {
+              this.gameover = true;
+            }
+            creep.checkout = true;
           }
         } else {
           creep.update(delta, this.map);
         }
       }
-      if (this.lives < 0) {
-        console.log("EPIC FAIL YOU NOOB");
-      }
       return this.gc();
     };
     StateMainMap.prototype.render = function(ctx) {
-      return this.camera.apply(ctx, __bind(function() {
+      this.camera.apply(ctx, __bind(function() {
         var creep, tower, _i, _j, _len, _len2, _ref, _ref2, _results;
         this.map.render(ctx);
-        this.hero.render(ctx);
-        _ref = this.towers;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          tower = _ref[_i];
-          tower.render(ctx);
+        if (!this.gameover) {
+          this.hero.render(ctx);
         }
-        _ref2 = this.creeps;
+        _ref = this.creeps;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          creep = _ref[_i];
+          creep.render(ctx);
+        }
+        _ref2 = this.towers;
         _results = [];
         for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
-          creep = _ref2[_j];
-          _results.push(creep.render(ctx));
+          tower = _ref2[_j];
+          _results.push(tower.render(ctx));
         }
         return _results;
       }, this));
+      if (this.gameover) {
+        ctx.font = 'bold 70px Arial, sans-serif';
+        ctx.fillText("GAME OVER", 190, 300);
+        return ctx.strokeText("GAME OVER", 190, 300);
+      } else {
+        ctx.fillText("Leben: " + this.lives, 20, 40);
+        ctx.strokeText("Leben: " + this.lives, 20, 40);
+        ctx.fillText("Gold: " + this.gold, 20, 75);
+        return ctx.strokeText("Gold: " + this.gold, 20, 75);
+      }
     };
     StateMainMap.prototype.gc = function() {
       var tower, _i, _len, _ref, _results;
@@ -725,11 +744,11 @@
       this.eventmanager = eventmanager;
       this.keyboard = keyboard;
       this.sprite = new Sprite({
-        "texture": "assets/images/test.png",
-        "width": 50,
-        "height": 50,
+        "texture": "assets/images/towermap.png",
+        "width": 64,
+        "height": 64,
         "key": {
-          "normal": 3
+          "normal": 5
         }
       });
       this.state = "normal";
@@ -738,7 +757,7 @@
       this.force = 0.01;
       this.decay = 0.95;
     }
-    Hero.prototype.update = function(delta, map) {
+    Hero.prototype.update = function(delta, map, gold) {
       var new_coor, new_tile;
       this.determine_speed();
       new_coor = this.coor.add(this.speed.mult(delta));
@@ -750,17 +769,22 @@
         this.speed.x = 0;
       }
       if (this.keyboard.key("space")) {
-        if (new_tile.isBuildable() && new_tile.builded === false) {
+        console.log(gold);
+        if (new_tile.isBuildable() && new_tile.builded === false && gold > 150) {
           this.towers.push(new Tower(this.eventmanager, {
             "coor": map.vectorAtTile(new_tile.col, new_tile.row)
           }));
-          return new_tile.builded = true;
+          new_tile.builded = true;
+          gold -= 150;
         }
       }
+      return gold;
     };
     Hero.prototype.render = function(ctx) {
       ctx.save();
-      ctx.translate(this.coor.x, this.coor.y);
+      ctx.translate(this.coor.x - 120, this.coor.y - 60);
+      ctx.rotate(-(Math.PI / 4));
+      ctx.scale(1, 1 / 0.4);
       this.sprite.render(this.state, ctx);
       return ctx.restore();
     };
@@ -828,7 +852,9 @@
     Tower.prototype.render = function(ctx) {
       var bullet, _i, _len, _ref, _results;
       ctx.save();
-      ctx.translate(this.coor.x, this.coor.y);
+      ctx.translate(this.coor.x - 90, this.coor.y - 30);
+      ctx.rotate(-(Math.PI / 4));
+      ctx.scale(1, 1 / 0.4);
       this.sprite.render(this.state, ctx);
       ctx.restore();
       _ref = this.bullets;
@@ -890,12 +916,12 @@
       var _ref;
       this.eventmanager = eventmanager;
       this.sprite = new Sprite({
-        "texture": "assets/images/test.png",
-        "width": 50,
-        "height": 50,
+        "texture": "assets/images/towermap.png",
+        "width": 64,
+        "height": 64,
         "key": {
-          "done": 2,
-          "normal": 3
+          "done": 15,
+          "normal": 0
         }
       });
       this.checkout = false;
@@ -923,7 +949,9 @@
     };
     Creep.prototype.render = function(ctx) {
       ctx.save();
-      ctx.translate(this.coor.x, this.coor.y);
+      ctx.translate(this.coor.x - 90, this.coor.y - 30);
+      ctx.rotate(-(Math.PI / 4));
+      ctx.scale(1, 1 / 0.4);
       this.sprite.render(this.state, ctx);
       return ctx.restore();
     };
@@ -962,18 +990,45 @@
   })();
   Bullet = (function() {
     function Bullet(from_coor, to_coor, options) {
-      this.explode = __bind(this.explode, this);      this.sprite = new Sprite({
-        "texture": "assets/images/enemies.png",
-        "width": 50,
-        "height": 50,
+      this.explode = __bind(this.explode, this);
+      var _i, _j, _k, _l, _m, _results, _results2, _results3, _results4, _results5;
+      this.exp1 = (function() {
+        _results = [];
+        for (_i = 16; _i <= 47; _i++){ _results.push(_i); }
+        return _results;
+      }).apply(this);
+      this.exp2 = (function() {
+        _results2 = [];
+        for (_j = 48; _j <= 79; _j++){ _results2.push(_j); }
+        return _results2;
+      }).apply(this);
+      this.exp3 = (function() {
+        _results3 = [];
+        for (_k = 80; _k <= 111; _k++){ _results3.push(_k); }
+        return _results3;
+      }).apply(this);
+      this.exp4 = (function() {
+        _results4 = [];
+        for (_l = 112; _l <= 143; _l++){ _results4.push(_l); }
+        return _results4;
+      }).apply(this);
+      this.exp5 = (function() {
+        _results5 = [];
+        for (_m = 144; _m <= 175; _m++){ _results5.push(_m); }
+        return _results5;
+      }).apply(this);
+      this.sprite = new Sprite({
+        "texture": "assets/images/towermap.png",
+        "width": 64,
+        "height": 64,
         "key": {
-          "normal": 1,
-          "done": 13
+          "normal": 160,
+          "done": 15
         }
       });
       this.sprite.addAnimation("exploding", {
-        frames: [0, 1, 2, 3, 4, 13],
-        fps: 8,
+        frames: this.exp2,
+        fps: 32,
         loop: false,
         callback: this.explode
       });
@@ -981,12 +1036,12 @@
       this.range_traveled = 0;
       this.direction = to_coor.subtract(from_coor).norm();
       this.coor = from_coor;
-      this.speed = 1;
+      this.speed = 0.7;
       this.damage = 100;
       this.max_range = 600;
       this.splash_radius = 50;
       this.splash_damage = 10;
-      this.trigger_range = 225;
+      this.trigger_range = 400;
     }
     Bullet.prototype.update = function(delta, targets) {
       var new_dist;
@@ -1008,7 +1063,9 @@
     };
     Bullet.prototype.render = function(ctx) {
       ctx.save();
-      ctx.translate(this.coor.x, this.coor.y);
+      ctx.translate(this.coor.x - 90, this.coor.y - 30);
+      ctx.rotate(-(Math.PI / 4));
+      ctx.scale(1, 1 / 0.4);
       this.sprite.render(this.state, ctx);
       return ctx.restore();
     };

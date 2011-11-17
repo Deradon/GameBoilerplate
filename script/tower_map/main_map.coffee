@@ -5,7 +5,9 @@ stateclass["main_map"] = class StateMainMap extends State
     @camera = new Camera {"projection": "iso", "vpWidth": @parent.width, "vpHeight": @parent.height}
 
     @creeps = []
-    @lives = 3
+    @lives = 0
+    @gameover = false
+    @gold = 500
     @spawners = []
     @towers = []
 
@@ -72,26 +74,29 @@ stateclass["main_map"] = class StateMainMap extends State
 
 
   update: (delta) ->
-    @hero.update(delta, @map)
-
+    if !@gameover
+      @gold = @hero.update(delta, @map, @gold)
+      @camera.coor = @hero.coor
+    else 
+      @camera.coor = @creeps[0].coor
+      
     # DEBUG TOWER
     for tower in @towers
       tower.update(delta, @creeps)
 
-    @camera.coor = @hero.coor
     for spawner in @spawners
       spawner.update(delta, @map)
 
     for creep in @creeps
       if creep.state == "done"
         if creep.checkout == false
-          @lives -=
+          if @lives > 0
+            @lives -= 1
+          else
+            @gameover = true
           creep.checkout = true
       else
         creep.update(delta, @map)
-
-    if @lives < 0
-      console.log("EPIC FAIL YOU NOOB")
 
     @gc()
 
@@ -99,16 +104,27 @@ stateclass["main_map"] = class StateMainMap extends State
     @camera.apply ctx, =>
       @map.render(ctx)
       #@creep.render(ctx)
-      @hero.render(ctx)
+      
 
       # DEBUG TOWER
-      for tower in @towers
-        tower.render(ctx)
       for creep in @creeps
         creep.render(ctx)
-
+      for tower in @towers
+        tower.render(ctx)  
+      if !@gameover
+        @hero.render(ctx)
+        
+    if @gameover
+      ctx.font = 'bold 70px Arial, sans-serif'
+      ctx.fillText( "GAME OVER", 190, 300 )
+      ctx.strokeText( "GAME OVER", 190, 300 )
+    else
+      ctx.fillText( "Leben: #{@lives}", 20, 40 )
+      ctx.strokeText( "Leben: #{@lives}", 20, 40 )
+      ctx.fillText( "Gold: #{@gold}", 20, 75 )
+      ctx.strokeText( "Gold: #{@gold}", 20, 75 )
+  
   gc: =>
-
     # Remove Bullets
     @garbage_count += 1
     if @garbage_count > @garbage_every

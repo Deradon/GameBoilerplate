@@ -4,12 +4,12 @@ class Creep
   constructor: (@eventmanager, options) ->
 
     @sprite = new Sprite
-      "texture": "assets/images/test.png"
-      "width": 50
-      "height": 50
+      "texture": "assets/images/towermap.png"
+      "width": 64
+      "height": 64
       "key":
-        "done": 2
-        "normal": 3
+        "done": 15
+        "normal": 0
 
     @checkout = false
     @state = "normal"
@@ -35,7 +35,9 @@ class Creep
 
   render: (ctx) ->
     ctx.save()
-    ctx.translate @coor.x, @coor.y
+    ctx.translate @coor.x-90, @coor.y-30
+    ctx.rotate -(Math.PI/4)
+    ctx.scale 1, 1/0.4 
     @sprite.render( @state, ctx )
     ctx.restore()
 

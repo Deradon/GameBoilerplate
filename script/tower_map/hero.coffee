@@ -6,11 +6,11 @@ class Hero
   constructor: (@towers, @eventmanager, @keyboard, options) ->
 
     @sprite = new Sprite
-      "texture": "assets/images/test.png"
-      "width": 50
-      "height": 50
+      "texture": "assets/images/towermap.png"
+      "width": 64
+      "height": 64
       "key":
-        "normal": 3
+        "normal": 5
     @state = "normal"
 
     # Coordinates of the mighty Hero
@@ -26,7 +26,7 @@ class Hero
     @decay = 0.95
 
 
-  update: (delta, map) ->
+  update: (delta, map, gold) ->
     @determine_speed()
       
     new_coor = @coor.add(@speed.mult delta)
@@ -40,13 +40,19 @@ class Hero
 
     # Space: Stop and Build or Update Tower
     if @keyboard.key("space")
-      if new_tile.isBuildable() && new_tile.builded == false
+      console.log(gold)
+      if new_tile.isBuildable() && new_tile.builded == false && gold > 150
        @towers.push new Tower @eventmanager, "coor": map.vectorAtTile(new_tile.col,new_tile.row)
        new_tile.builded = true
+       gold -= 150
+       
+    return gold
 
   render: (ctx) ->
     ctx.save()
-    ctx.translate(@coor.x, @coor.y)
+    ctx.translate @coor.x-120, @coor.y-60
+    ctx.rotate -(Math.PI/4)
+    ctx.scale 1, 1/0.4 
     @sprite.render(@state, ctx)
     ctx.restore()
 

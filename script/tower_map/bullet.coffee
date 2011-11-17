@@ -2,17 +2,23 @@
 
 class Bullet
   constructor: (from_coor, to_coor, options) ->
-
+    
+    @exp1 = [16..47]
+    @exp2 = [48..79]
+    @exp3 = [80..111]
+    @exp4 = [112..143]
+    @exp5 = [144..175]
+    
 
     @sprite = new Sprite
-      "texture": "assets/images/enemies.png"
-      "width": 50
-      "height": 50
+      "texture": "assets/images/towermap.png"
+      "width": 64
+      "height": 64
       "key":
-        "normal": 1
-        "done": 13
+        "normal": 160
+        "done": 15
 
-    @sprite.addAnimation "exploding", { frames: [0,1,2,3,4,13], fps: 8, loop: false, callback: @explode }
+    @sprite.addAnimation "exploding", { frames: @exp2, fps: 32, loop: false, callback: @explode }
 
     @state          = "normal"
     @range_traveled = 0
@@ -20,14 +26,14 @@ class Bullet
     @direction      = to_coor.subtract(from_coor).norm()
     @coor           = from_coor
 
-    @speed          = 1#options["speed"]         ? 1
+    @speed          = 0.7#options["speed"]         ? 1
     @damage         = 100#options["damage"]        ? 100
     @max_range      = 600#options["max_range"]     ? 1000
     @splash_radius  = 50#options["splash_radius"] ? 50
     @splash_damage  = 10#options["splash_damage"] ? 10
 
     # HACK
-    @trigger_range  = 225
+    @trigger_range  = 400
 
   update: (delta, targets) ->#, targets
     if @state == "normal"
@@ -48,7 +54,9 @@ class Bullet
 
   render: (ctx) ->
     ctx.save()
-    ctx.translate @coor.x, @coor.y
+    ctx.translate @coor.x-90, @coor.y-30
+    ctx.rotate -(Math.PI/4)
+    ctx.scale 1, 1/0.4 
     @sprite.render( @state, ctx )
     ctx.restore()
 
