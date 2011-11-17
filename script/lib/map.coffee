@@ -5,13 +5,13 @@ class Map
     @tiles = []
     @width = 0 # width and height of the map in tiles - can only be determined after the mapfile loading has completed
     @height = 0
-    @loadMapDataFromImage hash["mapfile"], hash["pattern"]
+    @loadMapDataFromImage hash["mapfile"], hash["pattern"],  hash["callback"]
 
   render: (ctx) ->
     for tile in @tiles
       tile.render(ctx)
 
-  loadMapDataFromImage: (file, pattern) ->
+  loadMapDataFromImage: (file, pattern, callback) ->
     map = new Image()
     map.src = file
     m = []
@@ -31,20 +31,31 @@ class Map
         m[row].push [Number(data[i]).toHex(),Number(data[i+1]).toHex(),Number(data[i+2]).toHex(),Number(data[i+3]).toHex()]
 
       switch pattern
+        when "towermap"
+          for row in [0..map.height-2]
+            for col in [0..map.width-2]
+              type = "#{m[row][col][0]}#{m[row][col+1][0]}#{m[row+1][col][0]}#{m[row+1][col+1][0]}"
+              type2 = "#{m[row][col][1]}#{m[row][col+1][1]}#{m[row+1][col][1]}#{m[row+1][col+1][1]}"
+              green = parseInt( m[row][col][1], 16 )
+              z = 0#parseInt( m[row][col][2], 16 )
+              @tiles.push( new Tile( @sprite, type, type2, row, col, green, z ))
+          #console.log @tiles #HACK
         when "simple"
           for row in [0..map.height-1]
             for col in [0..map.width-1]
               type = "#{m[row][col][0]}"
               green = parseInt( m[row][col][1], 16 )
               z = parseInt( m[row][col][2], 16 )
-              @tiles.push( new Tile( @sprite, type, row, col, green, z ))
+              @tiles.push( new Tile( @sprite, type, type2, row, col, green, z ))
         when "square"
+          #EDITED ... CAN BE RESTORED
           for row in [0..map.height-2]
             for col in [0..map.width-2]
               type = "#{m[row][col][0]}#{m[row][col+1][0]}#{m[row+1][col][0]}#{m[row+1][col+1][0]}"
+              type2 = "#{m[row][col][1]}#{m[row][col+1][1]}#{m[row+1][col][1]}#{m[row+1][col+1][1]}"
               green = parseInt( m[row][col][1], 16 )
               z = 0#parseInt( m[row][col][2], 16 )
-              @tiles.push( new Tile( @sprite, type, row, col, green, z ))
+              @tiles.push( new Tile( @sprite, type, type2, row, col, green, z ))
           #console.log @tiles #HACK
         when "cross"
           for row in [1..map.height-2] by 2
@@ -53,7 +64,7 @@ class Map
                 type = "#{m[row-1][col][0]}#{m[row][col+1][0]}#{m[row+1][col][0]}#{m[row][col-1][0]}"
                 green = parseInt( m[row][col][1], 16 )
                 z = parseInt( m[row][col][2], 16 )
-                @tiles.push( new Tile( @sprite, type, row/2, col/2, green, z ))
+                @tiles.push( new Tile( @sprite, type, type2, row/2, col/2, green, z ))
       
       # Updates surrounding tiles
       for tile in @tiles 
@@ -73,7 +84,8 @@ class Map
         #tile.sourrounding["right"]  = @tiles[(tile.row * @width + (tile.col + 1))-1]
         #tile.sourrounding["top"]    = @tiles[((tile.row - 1) * @width + tile.col)-1]
         #tile.sourrounding["bottom"] = @tiles[((tile.row + 1) * @width + tile.col)-1]
-
+      callback()
+      
   # Original Method bugged
   tileAtVector: (vec) ->
     col = Math.floor( vec.x / @sprite.innerWidth )
@@ -89,12 +101,24 @@ class Map
     return new Vector(@sprite.innerWidth*(col+0.5), @sprite.innerHeight*(row+0.5))
 
 class Tile
-  constructor: (@sprite, @type, @row, @col, @green=0, @z=0) ->
+  constructor: (@sprite, @type, @type2, @row, @col, @green=0, @z=0) ->
     @sourrounding = {"left":null,"right":null,"top":null,"bottom":null}
     
   isWalkable: ->
     #@green is 0
     @type is "99999999"
+
+  isSpawner: ->
+    @type2 is "ffffffff"
+    
+  isHeroSpawner: ->
+    @type2 is "55555555"
+    
+  isHeroWalkable: ->
+    @type is "00000000"
+    
+  isTarget: ->
+    @type2 is "aaaaaaaa"
 
   render: (ctx) ->
     ctx.save()

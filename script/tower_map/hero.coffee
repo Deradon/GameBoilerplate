@@ -31,7 +31,7 @@ class Hero
 
     new_coor = @coor.add(@speed.mult delta)
     new_tile = map.tileAtVector(new_coor)
-    if new_tile.isWalkable?()
+    if new_tile.isHeroWalkable?()
       @coor = new_coor
     else
       # TODO: add some soft bouncing

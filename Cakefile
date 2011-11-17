@@ -34,6 +34,7 @@ appFiles = [
   'tower_map/tower'
   'tower_map/creep'
   'tower_map/bullet'
+  'tower_map/spawner'
 ]
 
 task 'build:coffee', 'Build single application file from source files', ->

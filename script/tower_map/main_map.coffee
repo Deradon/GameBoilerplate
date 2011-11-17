@@ -3,6 +3,10 @@ stateclass["main_map"] = class StateMainMap extends State
   constructor: (@parent) ->
 #    @camera = new Camera {"projection": "normal", "vpWidth": @parent.width, "vpHeight": @parent.height}
     @camera = new Camera {"projection": "iso", "vpWidth": @parent.width, "vpHeight": @parent.height}
+    
+    @creeps = []
+    @lives = 3
+    @spawners = []
 
     beach3d = new Sprite
       "texture": "assets/images/wc33d.png"
@@ -30,43 +34,72 @@ stateclass["main_map"] = class StateMainMap extends State
 
     @map = new Map
       "mapfile": "assets/towermap_map1.png"
-      "pattern": "square"
+      "pattern": "towermap"
       "sprite": beach3d
+      "callback": =>
 
-    @hero = new Hero @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(2,0)
-    @creep = new Creep @parent.eventmanager, {"coor": @map.vectorAtTile(2,0), "speed": new Vector(0,0.07)}
+        #while @map["tiles"].length == 0
+        #  console.log("wait");
+        #window.setTimeout('console.log("wait")',5000);
+        #console.log(@map)
+        #console.log(@map.tiles)
+        #tiles = @map.tiles
+        #console.log(tiles)
+        #console.log(tiles[5])
+        for tile in @map.tiles
+          if tile.isSpawner()
+            @creep = new Creep @parent.eventmanager, {"coor": @map.vectorAtTile(tile.col,tile.row), "speed": new Vector(0,0.07)}
+            @spawner = new Spawner @creep, @creeps, 5
+            @spawners.push(@spawner)
+          if tile.isHeroSpawner() 
+            @hero = new Hero @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(tile.col,tile.row)
+        
+        
+
 
     # DEBUG TOWERS
-    @towers = []
-    @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(4,5)
-    @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(5,5)
-    @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(9,3)
-    @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(10,3)
-    @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(10,6)
-    @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(10,10)
-    @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(9,10)
-    @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(4,9)
-    @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(0,14)
-    @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(4,14)
+     # @towers = []
+      #@towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(4,5)
+      #@towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(5,5)
+      #@towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(9,3)
+      #@towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(10,3)
+     # @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(10,6)
+      #@towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(10,10)
+      #@towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(9,10)
+      #@towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(4,9)
+      #@towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(0,14)
+      #@towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(4,14)
 
   update: (delta) ->
     @hero.update(delta, @map)
 
     # DEBUG TOWER
-    for tower in @towers
-      tower.update(delta, @creep)
+    #for tower in @towers
+      #tower.update(delta, @creep)
 
-    #@camera.coor = @hero.coor
-    @camera.coor = @creep.coor
-    @creep.update(delta, @map)
+    @camera.coor = @hero.coor
+    for spawner in @spawners
+      spawner.update(delta, @map)
+    
+    for creep in @creeps
+      if creep.state == "done"
+        if creep.checkout == false
+          @lives -=
+          creep.checkout = true
+      else
+        creep.update(delta, @map)
+
+    if @lives < 0 
+      console.log("EPIC FAIL YOU NOOB")
 
   render: (ctx) ->
     @camera.apply ctx, =>
       @map.render(ctx)
-      @creep.render(ctx)
+      #@creep.render(ctx)
       @hero.render(ctx)
 
       # DEBUG TOWER
-      for tower in @towers
-        tower.render(ctx)
-
+      #for tower in @towers
+      #  tower.render(ctx)
+      for creep in @creeps
+        creep.render(ctx)
