@@ -614,7 +614,6 @@
         "amount": 5,
         "spawn_rate": 1000
       };
-      console.log(this.creep_levels[0]["creep"]);
       this.creep_levels[1] = {
         "creep": new Creep(this.parent.eventmanager, {
           "speed_factor": 0.2,
@@ -635,12 +634,12 @@
       };
       this.creep_levels[3] = {
         "creep": new Creep(this.parent.eventmanager, {
-          "speed_factor": 0.30,
+          "speed_factor": 0.25,
           "skin": 1,
-          "hp": 2500
+          "hp": 2200
         }),
         "amount": 99,
-        "spawn_rate": 600
+        "spawn_rate": 700
       };
       this.garbage_every = 31;
       this.garbage_count = 0;
@@ -688,9 +687,6 @@
               });
             }
           }
-          this.parent.eventmanager.register("creep_reached", __bind(function() {
-            return "pass";
-          }, this));
           return this.parent.eventmanager.register("gain_gold", __bind(function() {
             var creep, creeps_dead, spawner, _j, _k, _len2, _len3, _ref2, _ref3, _results;
             this.gold += 50;
@@ -815,6 +811,205 @@
     };
     return StateMainMap;
   })();
+  Bullet = (function() {
+    function Bullet(from_coor, to_coor, options) {
+      this.explode = __bind(this.explode, this);
+      var _i, _j, _k, _l, _m, _results, _results2, _results3, _results4, _results5;
+      this.exp1 = (function() {
+        _results = [];
+        for (_i = 16; _i <= 47; _i++){ _results.push(_i); }
+        return _results;
+      }).apply(this);
+      this.exp2 = (function() {
+        _results2 = [];
+        for (_j = 48; _j <= 79; _j++){ _results2.push(_j); }
+        return _results2;
+      }).apply(this);
+      this.exp3 = (function() {
+        _results3 = [];
+        for (_k = 80; _k <= 111; _k++){ _results3.push(_k); }
+        return _results3;
+      }).apply(this);
+      this.exp4 = (function() {
+        _results4 = [];
+        for (_l = 112; _l <= 143; _l++){ _results4.push(_l); }
+        return _results4;
+      }).apply(this);
+      this.exp5 = (function() {
+        _results5 = [];
+        for (_m = 144; _m <= 175; _m++){ _results5.push(_m); }
+        return _results5;
+      }).apply(this);
+      this.sprite = new Sprite({
+        "texture": "assets/images/towermap.png",
+        "width": 64,
+        "height": 64,
+        "key": {
+          "normal": 160,
+          "done": 15
+        }
+      });
+      this.sprite.addAnimation("exploding", {
+        frames: this.exp1,
+        fps: 32,
+        loop: false,
+        callback: this.explode
+      });
+      this.state = "normal";
+      this.range_traveled = 0;
+      this.direction = to_coor.subtract(from_coor).norm();
+      this.coor = from_coor;
+      this.speed = 0.8;
+      this.damage = 200;
+      this.max_range = 600;
+      this.splash_radius = 50;
+      this.splash_damage = 10;
+      this.trigger_range = 1200;
+    }
+    Bullet.prototype.update = function(delta, targets) {
+      var new_dist;
+      if (this.state === "normal") {
+        new_dist = delta * this.speed;
+        if (this.range_traveled + new_dist >= this.max_range) {
+          new_dist = this.max_range - this.range_traveled;
+        }
+        this.range_traveled += new_dist;
+        this.coor = this.coor.add(this.direction.mult(new_dist));
+        this.target = this.closest_target(targets);
+        if (this.target) {
+          this.state = "exploding";
+          this.target.hit(this);
+        }
+        if (this.range_traveled >= this.max_range) {
+          return this.state = "done";
+        }
+      }
+    };
+    Bullet.prototype.render = function(ctx) {
+      ctx.save();
+      ctx.translate(this.coor.x - 90, this.coor.y - 30);
+      ctx.rotate(-(Math.PI / 4));
+      ctx.scale(1, 1 / 0.4);
+      this.sprite.render(this.state, ctx);
+      return ctx.restore();
+    };
+    Bullet.prototype.closest_target = function(targets) {
+      var dist, min_range, min_target, target, _i, _len;
+      min_range = 999999;
+      min_target = null;
+      for (_i = 0, _len = targets.length; _i < _len; _i++) {
+        target = targets[_i];
+        if (target.state === "normal") {
+          dist = this.coor.subtract(target.coor).lengthSquared();
+          if (dist < min_range) {
+            min_target = target;
+            min_range = dist;
+          }
+        }
+      }
+      if (min_range < this.trigger_range) {
+        return min_target;
+      } else {
+        return null;
+      }
+    };
+    Bullet.prototype.explode = function() {
+      return this.state = "done";
+    };
+    return Bullet;
+  })();
+  Creep = (function() {
+    var newSpeed;
+    function Creep(eventmanager, options) {
+      var _ref, _ref2, _ref3, _ref4;
+      this.eventmanager = eventmanager;
+      this.skin = (_ref = options["skin"]) != null ? _ref : 0;
+      this.sprite = new Sprite({
+        "texture": "assets/images/towermap.png",
+        "width": 64,
+        "height": 64,
+        "key": {
+          "done": 15,
+          "dead": 15,
+          "normal": this.skin
+        }
+      });
+      this.checkout = false;
+      this.state = "normal";
+      this.speed_factor = (_ref2 = options["speed_factor"]) != null ? _ref2 : 1;
+      this.speed = new Vector(0, this.speed_factor);
+      this.coor = (_ref3 = options["coor"]) != null ? _ref3 : new Vector(0, 0);
+      this.start_coor = this.coor;
+      this.hp = (_ref4 = options["hp"]) != null ? _ref4 : 1000;
+    }
+    Creep.prototype.update = function(delta, map) {
+      var current_tile, new_coor, new_tile;
+      if (this.state !== "normal") {
+        return;
+      }
+      current_tile = map.tileAtVector(this.coor);
+      if (this.targetReached(current_tile)) {
+        if (this.state !== "done") {
+          return this.state = "done";
+        }
+      } else {
+        new_coor = this.coor.add(this.speed.mult(delta));
+        new_tile = map.tileAtVector(new_coor);
+        if (typeof new_tile.isWalkable === "function" ? new_tile.isWalkable() : void 0) {
+          return this.coor = new_coor;
+        } else {
+          return this.speed = newSpeed(current_tile, this.speed, this.speed_factor);
+        }
+      }
+    };
+    Creep.prototype.render = function(ctx) {
+      ctx.save();
+      ctx.translate(this.coor.x - 90, this.coor.y - 30);
+      ctx.rotate(-(Math.PI / 4));
+      ctx.scale(1, 1 / 0.4);
+      this.sprite.render(this.state, ctx);
+      return ctx.restore();
+    };
+    Creep.prototype.targetReached = function(tile) {
+      return tile.isTarget();
+    };
+    newSpeed = __bind(function(tile, speed, speed_factor) {
+      var direction_tile, key, new_speed, test_speed, _ref, _results;
+      _ref = tile.sourrounding;
+      _results = [];
+      for (key in _ref) {
+        direction_tile = _ref[key];
+        if (direction_tile != null ? typeof direction_tile.isWalkable === "function" ? direction_tile.isWalkable() : void 0 : void 0) {
+          switch (key) {
+            case "left":
+              new_speed = new Vector(-speed_factor, 0);
+              break;
+            case "right":
+              new_speed = new Vector(speed_factor, 0);
+              break;
+            case "top":
+              new_speed = new Vector(0, -speed_factor);
+              break;
+            case "bottom":
+              new_speed = new Vector(0, speed_factor);
+          }
+          test_speed = new_speed.mult(-1);
+          if (speed.x !== test_speed.x && speed.y !== test_speed.y) {
+            return new_speed;
+          }
+        }
+      }
+      return _results;
+    }, Creep);
+    Creep.prototype.hit = function(bullet) {
+      this.hp -= bullet.damage;
+      if (this.hp <= 0) {
+        this.state = "dead";
+        return this.eventmanager.trigger("gain_gold");
+      }
+    };
+    return Creep;
+  }).call(this);
   Hero = (function() {
     function Hero(towers, eventmanager, keyboard, options) {
       this.towers = towers;
@@ -882,6 +1077,50 @@
       }
     };
     return Hero;
+  })();
+  Spawner = (function() {
+    function Spawner(creep, creeps, quantity, coor, spawn_rate) {
+      this.creep = creep;
+      this.creeps = creeps;
+      this.quantity = quantity;
+      this.coor = coor;
+      this.spawn_rate = spawn_rate;
+      this.new_level = __bind(this.new_level, this);
+      this.current_spawn_rate = 0;
+      this.creep.speed = new Vector(0, 0.07);
+      this.level = 0;
+      this.base_quantity = this.quantity;
+    }
+    Spawner.prototype.update = function(delta, map) {
+      if (this.quantity > 0) {
+        this.current_spawn_rate += delta;
+        if (this.current_spawn_rate >= this.spawn_rate) {
+          this.current_spawn_rate -= this.spawn_rate;
+          this.spawn();
+          return this.quantity -= 1;
+        }
+      }
+    };
+    Spawner.prototype.render = function(ctx) {};
+    Spawner.prototype.spawn = function() {
+      var new_creep;
+      new_creep = new Creep(this.creep.eventmanager, {
+        "coor": this.coor,
+        "speed_factor": this.creep.speed_factor,
+        "skin": this.creep.skin,
+        "hp": this.creep.hp
+      });
+      return this.creeps.push(new_creep);
+    };
+    Spawner.prototype.new_level = function(new_creep, new_creeps, new_quantity, new_spawn_rate) {
+      this.level += 1;
+      this.creep = new_creep;
+      this.creeps = new_creeps;
+      this.quantity = new_quantity;
+      return this.spawn_rate = new_spawn_rate;
+    };
+    Spawner.prototype.gc = function() {};
+    return Spawner;
   })();
   Tower = (function() {
     function Tower(eventmanager, options) {
@@ -988,248 +1227,5 @@
       }).call(this);
     };
     return Tower;
-  })();
-  Creep = (function() {
-    var newSpeed;
-    function Creep(eventmanager, options) {
-      var _ref, _ref2, _ref3, _ref4;
-      this.eventmanager = eventmanager;
-      this.skin = (_ref = options["skin"]) != null ? _ref : 0;
-      this.sprite = new Sprite({
-        "texture": "assets/images/towermap.png",
-        "width": 64,
-        "height": 64,
-        "key": {
-          "done": 15,
-          "dead": 15,
-          "normal": this.skin
-        }
-      });
-      this.checkout = false;
-      this.state = "normal";
-      this.speed_factor = (_ref2 = options["speed_factor"]) != null ? _ref2 : 1;
-      this.speed = new Vector(0, this.speed_factor);
-      this.coor = (_ref3 = options["coor"]) != null ? _ref3 : new Vector(0, 0);
-      this.start_coor = this.coor;
-      this.hp = (_ref4 = options["hp"]) != null ? _ref4 : 1000;
-    }
-    Creep.prototype.update = function(delta, map) {
-      var current_tile, new_coor, new_tile;
-      if (this.state !== "normal") {
-        return;
-      }
-      current_tile = map.tileAtVector(this.coor);
-      if (this.targetReached(current_tile)) {
-        if (this.state !== "done") {
-          return this.state = "done";
-        }
-      } else {
-        new_coor = this.coor.add(this.speed.mult(delta));
-        new_tile = map.tileAtVector(new_coor);
-        if (typeof new_tile.isWalkable === "function" ? new_tile.isWalkable() : void 0) {
-          return this.coor = new_coor;
-        } else {
-          return this.speed = newSpeed(current_tile, this.speed, this.speed_factor);
-        }
-      }
-    };
-    Creep.prototype.render = function(ctx) {
-      ctx.save();
-      ctx.translate(this.coor.x - 90, this.coor.y - 30);
-      ctx.rotate(-(Math.PI / 4));
-      ctx.scale(1, 1 / 0.4);
-      this.sprite.render(this.state, ctx);
-      return ctx.restore();
-    };
-    Creep.prototype.targetReached = function(tile) {
-      return tile.isTarget();
-    };
-    newSpeed = __bind(function(tile, speed, speed_factor) {
-      var direction_tile, key, new_speed, test_speed, _ref, _results;
-      _ref = tile.sourrounding;
-      _results = [];
-      for (key in _ref) {
-        direction_tile = _ref[key];
-        if (direction_tile != null ? typeof direction_tile.isWalkable === "function" ? direction_tile.isWalkable() : void 0 : void 0) {
-          switch (key) {
-            case "left":
-              new_speed = new Vector(-speed_factor, 0);
-              break;
-            case "right":
-              new_speed = new Vector(speed_factor, 0);
-              break;
-            case "top":
-              new_speed = new Vector(0, -speed_factor);
-              break;
-            case "bottom":
-              new_speed = new Vector(0, speed_factor);
-          }
-          test_speed = new_speed.mult(-1);
-          if (speed.x !== test_speed.x && speed.y !== test_speed.y) {
-            return new_speed;
-          }
-        }
-      }
-      return _results;
-    }, Creep);
-    Creep.prototype.hit = function(bullet) {
-      this.hp -= bullet.damage;
-      if (this.hp <= 0) {
-        this.state = "dead";
-        return this.eventmanager.trigger("gain_gold");
-      }
-    };
-    return Creep;
-  }).call(this);
-  Bullet = (function() {
-    function Bullet(from_coor, to_coor, options) {
-      this.explode = __bind(this.explode, this);
-      var _i, _j, _k, _l, _m, _results, _results2, _results3, _results4, _results5;
-      this.exp1 = (function() {
-        _results = [];
-        for (_i = 16; _i <= 47; _i++){ _results.push(_i); }
-        return _results;
-      }).apply(this);
-      this.exp2 = (function() {
-        _results2 = [];
-        for (_j = 48; _j <= 79; _j++){ _results2.push(_j); }
-        return _results2;
-      }).apply(this);
-      this.exp3 = (function() {
-        _results3 = [];
-        for (_k = 80; _k <= 111; _k++){ _results3.push(_k); }
-        return _results3;
-      }).apply(this);
-      this.exp4 = (function() {
-        _results4 = [];
-        for (_l = 112; _l <= 143; _l++){ _results4.push(_l); }
-        return _results4;
-      }).apply(this);
-      this.exp5 = (function() {
-        _results5 = [];
-        for (_m = 144; _m <= 175; _m++){ _results5.push(_m); }
-        return _results5;
-      }).apply(this);
-      this.sprite = new Sprite({
-        "texture": "assets/images/towermap.png",
-        "width": 64,
-        "height": 64,
-        "key": {
-          "normal": 160,
-          "done": 15
-        }
-      });
-      this.sprite.addAnimation("exploding", {
-        frames: this.exp2,
-        fps: 32,
-        loop: false,
-        callback: this.explode
-      });
-      this.state = "normal";
-      this.range_traveled = 0;
-      this.direction = to_coor.subtract(from_coor).norm();
-      this.coor = from_coor;
-      this.speed = 0.8;
-      this.damage = 200;
-      this.max_range = 600;
-      this.splash_radius = 50;
-      this.splash_damage = 10;
-      this.trigger_range = 1200;
-    }
-    Bullet.prototype.update = function(delta, targets) {
-      var new_dist;
-      if (this.state === "normal") {
-        new_dist = delta * this.speed;
-        if (this.range_traveled + new_dist >= this.max_range) {
-          new_dist = this.max_range - this.range_traveled;
-        }
-        this.range_traveled += new_dist;
-        this.coor = this.coor.add(this.direction.mult(new_dist));
-        this.target = this.closest_target(targets);
-        if (this.target) {
-          this.state = "exploding";
-          this.target.hit(this);
-        }
-        if (this.range_traveled >= this.max_range) {
-          return this.state = "done";
-        }
-      }
-    };
-    Bullet.prototype.render = function(ctx) {
-      ctx.save();
-      ctx.translate(this.coor.x - 90, this.coor.y - 30);
-      ctx.rotate(-(Math.PI / 4));
-      ctx.scale(1, 1 / 0.4);
-      this.sprite.render(this.state, ctx);
-      return ctx.restore();
-    };
-    Bullet.prototype.closest_target = function(targets) {
-      var dist, min_range, min_target, target, _i, _len;
-      min_range = 999999;
-      min_target = null;
-      for (_i = 0, _len = targets.length; _i < _len; _i++) {
-        target = targets[_i];
-        if (target.state === "normal") {
-          dist = this.coor.subtract(target.coor).lengthSquared();
-          if (dist < min_range) {
-            min_target = target;
-            min_range = dist;
-          }
-        }
-      }
-      if (min_range < this.trigger_range) {
-        return min_target;
-      } else {
-        return null;
-      }
-    };
-    Bullet.prototype.explode = function() {
-      return this.state = "done";
-    };
-    return Bullet;
-  })();
-  Spawner = (function() {
-    function Spawner(creep, creeps, quantity, coor, spawn_rate) {
-      this.creep = creep;
-      this.creeps = creeps;
-      this.quantity = quantity;
-      this.coor = coor;
-      this.spawn_rate = spawn_rate;
-      this.new_level = __bind(this.new_level, this);
-      this.current_spawn_rate = 0;
-      this.creep.speed = new Vector(0, 0.07);
-      this.level = 0;
-      this.base_quantity = this.quantity;
-    }
-    Spawner.prototype.update = function(delta, map) {
-      if (this.quantity > 0) {
-        this.current_spawn_rate += delta;
-        if (this.current_spawn_rate >= this.spawn_rate) {
-          this.current_spawn_rate -= this.spawn_rate;
-          this.spawn();
-          return this.quantity -= 1;
-        }
-      }
-    };
-    Spawner.prototype.render = function(ctx) {};
-    Spawner.prototype.spawn = function() {
-      var new_creep;
-      new_creep = new Creep(this.creep.eventmanager, {
-        "coor": this.coor,
-        "speed_factor": this.creep.speed_factor,
-        "skin": this.creep.skin,
-        "hp": this.creep.hp
-      });
-      return this.creeps.push(new_creep);
-    };
-    Spawner.prototype.new_level = function(new_creep, new_creeps, new_quantity, new_spawn_rate) {
-      this.level += 1;
-      this.creep = new_creep;
-      this.creeps = new_creeps;
-      this.quantity = new_quantity;
-      return this.spawn_rate = new_spawn_rate;
-    };
-    Spawner.prototype.gc = function() {};
-    return Spawner;
   })();
 }).call(this);

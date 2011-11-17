@@ -23,7 +23,6 @@ class TowerMap extends Game
     @ctx.clearRect 0, 0, @width, @height
     @stateManager.currentState.render @ctx
     super()
-    
 
 
 $ ->

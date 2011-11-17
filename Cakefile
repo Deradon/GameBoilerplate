@@ -28,13 +28,18 @@ libFiles  = [
 #]
 
 appFiles = [
+  # Entry
   'tower_map/tower_map'
-  'tower_map/main_map'
-  'tower_map/hero'
-  'tower_map/tower'
-  'tower_map/creep'
-  'tower_map/bullet'
-  'tower_map/spawner'
+
+  # State files
+  'tower_map/states/main_map'
+
+  # Actor files
+  'tower_map/actors/bullet'
+  'tower_map/actors/creep'
+  'tower_map/actors/hero'
+  'tower_map/actors/spawner'
+  'tower_map/actors/tower'
 ]
 
 task 'build:coffee', 'Build single application file from source files', ->
