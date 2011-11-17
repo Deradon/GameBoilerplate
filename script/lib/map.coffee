@@ -103,6 +103,7 @@ class Map
 class Tile
   constructor: (@sprite, @type, @type2, @row, @col, @green=0, @z=0) ->
     @sourrounding = {"left":null,"right":null,"top":null,"bottom":null}
+    @builded = false
     
   isWalkable: ->
     #@green is 0
@@ -115,6 +116,9 @@ class Tile
     @type2 is "55555555"
     
   isHeroWalkable: ->
+    @type is "00000000"
+    
+  isBuildable: ->
     @type is "00000000"
     
   isTarget: ->

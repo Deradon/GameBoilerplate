@@ -3,7 +3,7 @@
 # * speed should be aware of delta
 # * get a sprite
 class Hero
-  constructor: (@eventmanager, @keyboard, options) ->
+  constructor: (@towers, @eventmanager, @keyboard, options) ->
 
     @sprite = new Sprite
       "texture": "assets/images/test.png"
@@ -28,7 +28,7 @@ class Hero
 
   update: (delta, map) ->
     @determine_speed()
-
+      
     new_coor = @coor.add(@speed.mult delta)
     new_tile = map.tileAtVector(new_coor)
     if new_tile.isHeroWalkable?()
@@ -38,6 +38,11 @@ class Hero
       @speed.y = 0
       @speed.x = 0
 
+    # Space: Stop and Build or Update Tower
+    if @keyboard.key("space")
+      if new_tile.isBuildable() && new_tile.builded == false
+       @towers.push new Tower @eventmanager, "coor": map.vectorAtTile(new_tile.col,new_tile.row)
+       new_tile.builded = true
 
   render: (ctx) ->
     ctx.save()
@@ -62,9 +67,4 @@ class Hero
       @speed.y += @force
     else
       @speed.y *= @decay
-
-    # Space: Stop and Build or Update Tower
-    if @keyboard.key("space")
-      @speed.y = 0.0
-      @speed.x = 0.0
 

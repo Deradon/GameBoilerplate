@@ -367,6 +367,7 @@
         "top": null,
         "bottom": null
       };
+      this.builded = false;
     }
     Tile.prototype.isWalkable = function() {
       return this.type === "99999999";
@@ -378,6 +379,9 @@
       return this.type2 === "55555555";
     };
     Tile.prototype.isHeroWalkable = function() {
+      return this.type === "00000000";
+    };
+    Tile.prototype.isBuildable = function() {
       return this.type === "00000000";
     };
     Tile.prototype.isTarget = function() {
@@ -642,7 +646,7 @@
               this.spawner = new Spawner(this.creep, this.creeps, 5);
               this.spawners.push(this.spawner);
             }
-            _results.push(tile.isHeroSpawner() ? this.hero = new Hero(this.parent.eventmanager, this.parent.keyboard, {
+            _results.push(tile.isHeroSpawner() ? this.hero = new Hero(this.towers, this.parent.eventmanager, this.parent.keyboard, {
               "coor": this.map.vectorAtTile(tile.col, tile.row)
             }) : void 0);
           }
@@ -716,7 +720,8 @@
     return StateMainMap;
   })();
   Hero = (function() {
-    function Hero(eventmanager, keyboard, options) {
+    function Hero(towers, eventmanager, keyboard, options) {
+      this.towers = towers;
       this.eventmanager = eventmanager;
       this.keyboard = keyboard;
       this.sprite = new Sprite({
@@ -739,10 +744,18 @@
       new_coor = this.coor.add(this.speed.mult(delta));
       new_tile = map.tileAtVector(new_coor);
       if (typeof new_tile.isHeroWalkable === "function" ? new_tile.isHeroWalkable() : void 0) {
-        return this.coor = new_coor;
+        this.coor = new_coor;
       } else {
         this.speed.y = 0;
-        return this.speed.x = 0;
+        this.speed.x = 0;
+      }
+      if (this.keyboard.key("space")) {
+        if (new_tile.isBuildable() && new_tile.builded === false) {
+          this.towers.push(new Tower(this.eventmanager, {
+            "coor": map.vectorAtTile(new_tile.col, new_tile.row)
+          }));
+          return new_tile.builded = true;
+        }
       }
     };
     Hero.prototype.render = function(ctx) {
@@ -760,24 +773,19 @@
         this.speed.x *= this.decay;
       }
       if (this.keyboard.key("up")) {
-        this.speed.y -= this.force;
+        return this.speed.y -= this.force;
       } else if (this.keyboard.key("down")) {
-        this.speed.y += this.force;
+        return this.speed.y += this.force;
       } else {
-        this.speed.y *= this.decay;
-      }
-      if (this.keyboard.key("space")) {
-        this.speed.y = 0.0;
-        return this.speed.x = 0.0;
+        return this.speed.y *= this.decay;
       }
     };
     return Hero;
   })();
   Tower = (function() {
-    function Tower(eventmanager, keyboard, options) {
+    function Tower(eventmanager, options) {
       var _ref, _ref2, _ref3, _ref4, _ref5;
       this.eventmanager = eventmanager;
-      this.keyboard = keyboard;
       this.gc = __bind(this.gc, this);
       this.state = "normal";
       this.sprite = new Sprite({

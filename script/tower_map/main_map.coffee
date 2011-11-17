@@ -56,7 +56,7 @@ stateclass["main_map"] = class StateMainMap extends State
             @spawner = new Spawner @creep, @creeps, 5
             @spawners.push(@spawner)
           if tile.isHeroSpawner()
-            @hero = new Hero @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(tile.col,tile.row)
+            @hero = new Hero @towers, @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(tile.col,tile.row)
 
         # DEBUG TOWERS
 #        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(4,5)
@@ -69,6 +69,7 @@ stateclass["main_map"] = class StateMainMap extends State
 #        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(4,9)
 #        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(0,14)
 #        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(4,14)
+
 
   update: (delta) ->
     @hero.update(delta, @map)
