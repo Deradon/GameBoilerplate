@@ -775,7 +775,9 @@
     return Tower;
   })();
   Creep = (function() {
+    var newSpeed;
     function Creep(eventmanager, options) {
+      var _ref;
       this.eventmanager = eventmanager;
       this.state = "normal";
       this.sprite = new Sprite({
@@ -789,30 +791,17 @@
       });
       this.coor = options["coor"];
       this.start_coor = this.coor;
-      if (options["speed"]) {
-        this.speed = options["speed"];
-      } else {
-        this.speed = new Vector(0, 0);
-      }
-      this.force = 0.00;
-      this.gravity = 0.00;
+      this.speed = (_ref = options["speed"]) != null ? _ref : new Vector(0, 0);
     }
     Creep.prototype.update = function(delta, map) {
-      var direction_tile, key, new_coor, tile, walkable, _base, _base2, _ref, _results;
-      tile = map.tileAtVector(this.coor);
+      var current_tile, new_coor, new_tile;
+      current_tile = map.tileAtVector(this.coor);
       new_coor = this.coor.add(this.speed.mult(delta));
-      walkable = typeof (_base = map.tileAtVector(new_coor)).isWalkable === "function" ? _base.isWalkable() : void 0;
-      if (typeof (_base2 = map.tileAtVector(new_coor)).isWalkable === "function" ? _base2.isWalkable() : void 0) {
+      new_tile = map.tileAtVector(new_coor);
+      if (typeof new_tile.isWalkable === "function" ? new_tile.isWalkable() : void 0) {
         return this.coor = new_coor;
       } else {
-        console.log(tile);
-        _ref = tile.sourrounding;
-        _results = [];
-        for (key in _ref) {
-          direction_tile = _ref[key];
-          _results.push(direction_tile && (direction_tile != null ? typeof direction_tile.isWalkable === "function" ? direction_tile.isWalkable() : void 0 : void 0) ? (console.log("walkable tile vorhanden"), key === "left" ? this.new_speed = new Vector(0, 0.07) : key === "right" ? this.new_speed = new Vector(0, -0.07) : key === "top" ? this.new_speed = new Vector(0.07, 0) : key === "bottom" ? this.new_speed = new Vector(-0.07, 0) : void 0, this.speed !== this.new_speed.mult(-1) ? (console.log("" + key + " - speed: " + this.speed.x + ", " + this.speed.y), console.log("" + key + " - new speed: " + this.new_speed.x + ", " + this.new_speed.y), this.speed = this.new_speed) : void 0) : void 0);
-        }
-        return _results;
+        return this.speed = newSpeed(current_tile, this.speed);
       }
     };
     Creep.prototype.render = function(ctx) {
@@ -820,6 +809,34 @@
       ctx.translate(this.coor.x, this.coor.y);
       this.sprite.render(this.state, ctx);
       return ctx.restore();
+    };
+    newSpeed = function(tile, speed) {
+      var direction_tile, key, new_speed, test_speed, _ref, _results;
+      _ref = tile.sourrounding;
+      _results = [];
+      for (key in _ref) {
+        direction_tile = _ref[key];
+        if (direction_tile != null ? typeof direction_tile.isWalkable === "function" ? direction_tile.isWalkable() : void 0 : void 0) {
+          switch (key) {
+            case "left":
+              new_speed = new Vector(-0.07, 0);
+              break;
+            case "right":
+              new_speed = new Vector(0.07, 0);
+              break;
+            case "top":
+              new_speed = new Vector(0, -0.07);
+              break;
+            case "bottom":
+              new_speed = new Vector(0, 0.07);
+          }
+          test_speed = new_speed.mult(-1);
+          if (speed.x !== test_speed.x && speed.y !== test_speed.y) {
+            return new_speed;
+          }
+        }
+      }
+      return _results;
     };
     return Creep;
   })();
