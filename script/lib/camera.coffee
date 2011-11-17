@@ -27,7 +27,7 @@ class Camera
         # MONKEYPATCH: Added viewport to iso camera
         # TODO: correct center
         #ctx.translate 300, -400 # 200,-400
-        ctx.translate @vpWidth/2 - @coor.x + 300, @vpHeight/2 - @coor.y - 250
+        ctx.translate @vpWidth/2 - @coor.x + 300, @vpHeight/2 - @coor.y - 150
 
         callback()
         ctx.restore()

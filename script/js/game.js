@@ -553,7 +553,7 @@
           ctx.save();
           ctx.scale(1, 0.4);
           ctx.rotate(Math.PI / 4);
-          ctx.translate(this.vpWidth / 2 - this.coor.x + 300, this.vpHeight / 2 - this.coor.y - 250);
+          ctx.translate(this.vpWidth / 2 - this.coor.x + 300, this.vpHeight / 2 - this.coor.y - 150);
           callback();
           return ctx.restore();
       }
@@ -639,8 +639,8 @@
           "skin": 1,
           "hp": 5000
         }),
-        "amount": 5,
-        "spawn_rate": 200
+        "amount": 99999,
+        "spawn_rate": 500
       };
       this.garbage_every = 31;
       this.garbage_count = 0;

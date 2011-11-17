@@ -52,8 +52,8 @@ stateclass["main_map"] = class StateMainMap extends State
         "skin": 1
         "hp": 5000
       }),
-      "amount": 5,
-      "spawn_rate": 200
+      "amount": 99999,
+      "spawn_rate": 500
     }
 
 
