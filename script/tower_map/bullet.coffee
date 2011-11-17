@@ -26,14 +26,14 @@ class Bullet
     @direction      = to_coor.subtract(from_coor).norm()
     @coor           = from_coor
 
-    @speed          = 0.7#options["speed"]         ? 1
+    @speed          = 0.8#options["speed"]         ? 1
     @damage         = 200#options["damage"]        ? 100
     @max_range      = 600#options["max_range"]     ? 1000
     @splash_radius  = 50#options["splash_radius"] ? 50
     @splash_damage  = 10#options["splash_damage"] ? 10
 
     # HACK
-    @trigger_range  = 900
+    @trigger_range  = 1200
 
   update: (delta, targets) ->#, targets
     if @state == "normal"

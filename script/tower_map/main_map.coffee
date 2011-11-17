@@ -48,12 +48,12 @@ stateclass["main_map"] = class StateMainMap extends State
 
     @creep_levels[3] = {
       "creep": new Creep(@parent.eventmanager, {
-        "speed_factor": 0.3
+        "speed_factor": 0.30
         "skin": 1
-        "hp": 5000
+        "hp": 2500
       }),
-      "amount": 99999,
-      "spawn_rate": 500
+      "amount": 99,
+      "spawn_rate": 600
     }
 
 
@@ -99,6 +99,24 @@ stateclass["main_map"] = class StateMainMap extends State
             @hero = new Hero @towers, @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(tile.col,tile.row)
 
 
+        @parent.eventmanager.register "creep_reached", =>
+          "pass"
+#          @gold += 50
+
+#          creeps_dead = true
+#          for creep in @creeps
+#            if creep.state == "normal"
+#              creeps_dead = false
+
+#          if creeps_dead
+#            @creeps = []
+#            if @level < @creep_levels.length
+#              @level += 1
+#              for spawner in @spawners
+#                spawner.new_level @creep_levels[@level-1]["creep"], @creeps, @creep_levels[@level-1]["amount"], @creep_levels[@level-1]["spawn_rate"]
+#            else
+#              @won = true
+
         @parent.eventmanager.register "gain_gold", =>
           @gold += 50
 
@@ -137,6 +155,7 @@ stateclass["main_map"] = class StateMainMap extends State
         if creep.checkout == false
           if @lives > 0
             @lives -= 1
+            #@eventmanager.trigger "creep_reached"
           else
             @gameover = true
           creep.checkout = true

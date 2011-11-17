@@ -635,12 +635,12 @@
       };
       this.creep_levels[3] = {
         "creep": new Creep(this.parent.eventmanager, {
-          "speed_factor": 0.3,
+          "speed_factor": 0.30,
           "skin": 1,
-          "hp": 5000
+          "hp": 2500
         }),
-        "amount": 99999,
-        "spawn_rate": 500
+        "amount": 99,
+        "spawn_rate": 600
       };
       this.garbage_every = 31;
       this.garbage_count = 0;
@@ -688,6 +688,9 @@
               });
             }
           }
+          this.parent.eventmanager.register("creep_reached", __bind(function() {
+            return "pass";
+          }, this));
           return this.parent.eventmanager.register("gain_gold", __bind(function() {
             var creep, creeps_dead, spawner, _j, _k, _len2, _len3, _ref2, _ref3, _results;
             this.gold += 50;
@@ -1126,12 +1129,12 @@
       this.range_traveled = 0;
       this.direction = to_coor.subtract(from_coor).norm();
       this.coor = from_coor;
-      this.speed = 0.7;
+      this.speed = 0.8;
       this.damage = 200;
       this.max_range = 600;
       this.splash_radius = 50;
       this.splash_damage = 10;
-      this.trigger_range = 900;
+      this.trigger_range = 1200;
     }
     Bullet.prototype.update = function(delta, targets) {
       var new_dist;
