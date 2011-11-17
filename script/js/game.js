@@ -1,5 +1,5 @@
 (function() {
-  var Animation, Background, Camera, Creep, Eventmanager, Game, Hero, Keyboard, Map, Shape, Sprite, State, StateMainMap, Statemanager, Tile, Timer, Tower, TowerMap, Vector, root, stateclass;
+  var Animation, Background, Bullet, Camera, Creep, Eventmanager, Game, Hero, Keyboard, Map, Shape, Sprite, State, StateMainMap, Statemanager, Tile, Timer, Tower, TowerMap, Vector, root, stateclass;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
     function ctor() { this.constructor = child; }
@@ -220,7 +220,7 @@
       return this.timer.punch();
     };
     Game.prototype.render = function() {
-      return this.ctx.fillText(this.timer.fps().toFixed(1), 960, 20);
+      return this.ctx.fillText(this.timer.fps().toFixed(1), 20, 20);
     };
     return Game;
   })();
@@ -742,32 +742,66 @@
       });
       this.coor = options["coor"];
       this.hp = (_ref = options["hp"]) != null ? _ref : 100;
-      this.range = (_ref2 = options["range"]) != null ? _ref2 : 250;
+      this.range = (_ref2 = options["range"]) != null ? _ref2 : 450;
       this.range *= this.range;
       this.last_target = null;
       this.scan_rate = (_ref3 = options["scan_rate"]) != null ? _ref3 : 500;
       this.fire_rate = (_ref4 = options["fire_rate"]) != null ? _ref4 : 1000;
       this.damage = (_ref5 = options["damage"]) != null ? _ref5 : 100;
       this.current_scan_rate = 0;
+      this.bullets = [];
+      this.garbage_every = 30;
+      this.garbage_count = 0;
     }
-    Tower.prototype.update = function(delta, hero) {
+    Tower.prototype.update = function(delta, target) {
+      var bullet, _i, _len, _ref;
       this.current_scan_rate += delta;
       if (this.current_scan_rate >= this.scan_rate) {
         this.current_scan_rate -= this.scan_rate;
-        return this.scan(hero);
+        this.scan(target);
+      }
+      _ref = this.bullets;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        bullet = _ref[_i];
+        bullet.update(delta, [target]);
+      }
+      this.garbage_count += 1;
+      if (this.garbage_count > this.garbage_every) {
+        this.garbage_count = 0;
+        return this.bullets = (function() {
+          var _j, _len2, _ref2, _results;
+          _ref2 = this.bullets;
+          _results = [];
+          for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
+            bullet = _ref2[_j];
+            if (bullet.state !== "done") {
+              _results.push(bullet);
+            }
+          }
+          return _results;
+        }).call(this);
       }
     };
     Tower.prototype.render = function(ctx) {
+      var bullet, _i, _len, _ref, _results;
       ctx.save();
       ctx.translate(this.coor.x, this.coor.y);
       this.sprite.render(this.state, ctx);
-      return ctx.restore();
+      ctx.restore();
+      _ref = this.bullets;
+      _results = [];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        bullet = _ref[_i];
+        _results.push(bullet.render(ctx));
+      }
+      return _results;
     };
-    Tower.prototype.scan = function(hero) {
+    Tower.prototype.scan = function(target) {
       var dist;
-      dist = this.coor.subtract(hero.coor).lengthSquared();
+      dist = this.coor.subtract(target.coor).lengthSquared();
       if (dist < this.range) {
-        return this.state = "attacking";
+        this.state = "attacking";
+        return this.bullets.push(new Bullet(this.coor, target.coor));
       } else {
         return this.state = "normal";
       }
@@ -779,19 +813,18 @@
     function Creep(eventmanager, options) {
       var _ref;
       this.eventmanager = eventmanager;
-      this.state = "normal";
       this.sprite = new Sprite({
         "texture": "assets/images/test.png",
         "width": 50,
         "height": 50,
         "key": {
-          "normal": 3,
-          "jumping": 5
+          "normal": 3
         }
       });
+      this.state = "normal";
+      this.speed = (_ref = options["speed"]) != null ? _ref : new Vector(0, 0);
       this.coor = options["coor"];
       this.start_coor = this.coor;
-      this.speed = (_ref = options["speed"]) != null ? _ref : new Vector(0, 0);
     }
     Creep.prototype.update = function(delta, map) {
       var current_tile, new_coor, new_tile;
@@ -839,5 +872,82 @@
       return _results;
     };
     return Creep;
+  })();
+  Bullet = (function() {
+    function Bullet(from_coor, to_coor, options) {
+      this.explode = __bind(this.explode, this);      this.sprite = new Sprite({
+        "texture": "assets/images/enemies.png",
+        "width": 50,
+        "height": 50,
+        "key": {
+          "normal": 1,
+          "done": 13
+        }
+      });
+      this.sprite.addAnimation("exploding", {
+        frames: [0, 1, 2, 3, 4, 13],
+        fps: 8,
+        loop: false,
+        callback: this.explode
+      });
+      this.state = "normal";
+      this.range_traveled = 0;
+      this.direction = to_coor.subtract(from_coor).norm();
+      this.coor = from_coor;
+      this.speed = 1;
+      this.damage = 100;
+      this.max_range = 600;
+      this.splash_radius = 50;
+      this.splash_damage = 10;
+      this.trigger_range = 225;
+    }
+    Bullet.prototype.update = function(delta, targets) {
+      var new_dist;
+      if (this.state === "normal") {
+        new_dist = delta * this.speed;
+        if (this.range_traveled + new_dist >= this.max_range) {
+          new_dist = this.max_range - this.range_traveled;
+        }
+        this.range_traveled += new_dist;
+        this.coor = this.coor.add(this.direction.mult(new_dist));
+        this.target = this.closest_target(targets);
+        if (this.target) {
+          this.state = "exploding";
+        }
+        if (this.range_traveled >= this.max_range) {
+          return this.state = "done";
+        }
+      }
+    };
+    Bullet.prototype.render = function(ctx) {
+      ctx.save();
+      ctx.translate(this.coor.x, this.coor.y);
+      this.sprite.render(this.state, ctx);
+      return ctx.restore();
+    };
+    Bullet.prototype.closest_target = function(targets) {
+      var dist, min_range, min_target, target, _i, _len;
+      min_range = 999999;
+      min_target = null;
+      for (_i = 0, _len = targets.length; _i < _len; _i++) {
+        target = targets[_i];
+        dist = this.coor.subtract(target.coor).lengthSquared();
+        if (dist < min_range) {
+          min_target = target;
+          min_range = dist;
+        }
+      }
+      if (min_range < this.trigger_range) {
+        return min_target;
+      } else {
+        return null;
+      }
+    };
+    Bullet.prototype.explode = function() {
+      console.log("callback");
+      this.state = "done";
+      return console.log(this.state);
+    };
+    return Bullet;
   })();
 }).call(this);

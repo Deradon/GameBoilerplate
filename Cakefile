@@ -33,6 +33,7 @@ appFiles = [
   'tower_map/hero'
   'tower_map/tower'
   'tower_map/creep'
+  'tower_map/bullet'
 ]
 
 task 'build:coffee', 'Build single application file from source files', ->
