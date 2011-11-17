@@ -8,8 +8,10 @@ class Creep
       "width": 50
       "height": 50
       "key":
+        "done": 2
         "normal": 3
 
+    @checkout = false
     @state = "normal"
     @speed = options["speed"] ? new Vector(0, 0)
     @coor  = options["coor"]
@@ -18,19 +20,27 @@ class Creep
 
   update: (delta, map) ->
     current_tile = map.tileAtVector(@coor)
-    new_coor = @coor.add(@speed.mult delta)
-    new_tile = map.tileAtVector(new_coor)
-
-    if new_tile.isWalkable?()
-      @coor = new_coor
+    if @targetReached(current_tile) 
+      if @state != "done"
+        @state = "done"
     else
-      @speed = newSpeed(current_tile, @speed)
+      new_coor = @coor.add(@speed.mult delta)
+      new_tile = map.tileAtVector(new_coor)
+
+      if new_tile.isWalkable?()
+        @coor = new_coor
+      else
+        @speed = newSpeed(current_tile, @speed)
+        
 
   render: (ctx) ->
     ctx.save()
     ctx.translate @coor.x, @coor.y
     @sprite.render( @state, ctx )
     ctx.restore()
+
+  targetReached: (tile) ->
+    tile.isTarget()
 
   newSpeed = (tile, speed) ->
     for key, direction_tile of tile.sourrounding

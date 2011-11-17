@@ -14,12 +14,14 @@ class Camera
     switch @projection
       when "normal"
         ctx.save()
+        ctx.scale 0.3, 0.3
         ctx.translate @vpWidth/2 - @coor.x, @vpHeight/2 - @coor.y
         callback()
         ctx.restore()
       when "iso"
         ctx.save()
         ctx.scale 1, 0.4 # 1,0.4
+        #ctx.scale 0.6, 0.2
         ctx.rotate Math.PI/4
 
         # MONKEYPATCH: Added viewport to iso camera
