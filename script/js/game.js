@@ -603,7 +603,6 @@
       this.hero = new Hero(this.parent.eventmanager, this.parent.keyboard, {
         "coor": this.map.vectorAtTile(2, 0)
       });
-      this.hero.gravity = 0.0;
       this.creep = new Creep(this.parent.eventmanager, {
         "coor": this.map.vectorAtTile(2, 0),
         "speed": new Vector(0, 0.07)
@@ -642,6 +641,7 @@
     }
     StateMainMap.prototype.update = function(delta) {
       var tower, _i, _len, _ref;
+      this.hero.update(delta, this.map);
       _ref = this.towers;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         tower = _ref[_i];
@@ -654,6 +654,7 @@
         var tower, _i, _len, _ref, _results;
         this.map.render(ctx);
         this.creep.render(ctx);
+        this.hero.render(ctx);
         _ref = this.towers;
         _results = [];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -669,26 +670,39 @@
     function Hero(eventmanager, keyboard, options) {
       this.eventmanager = eventmanager;
       this.keyboard = keyboard;
-      this.state = "normal";
       this.sprite = new Sprite({
         "texture": "assets/images/test.png",
         "width": 50,
         "height": 50,
         "key": {
-          "normal": 3,
-          "jumping": 5
+          "normal": 3
         }
       });
+      this.state = "normal";
       this.coor = options["coor"];
-      this.start_coor = this.coor;
       this.speed = new Vector(0, 0);
       this.force = 0.01;
-      this.gravity = 0.00;
       this.decay = 0.95;
     }
     Hero.prototype.update = function(delta, map) {
-      var new_coor, tile, walkable, _base, _base2;
-      tile = map.tileAtVector(this.coor);
+      var new_coor, new_tile;
+      this.determine_speed();
+      new_coor = this.coor.add(this.speed.mult(delta));
+      new_tile = map.tileAtVector(new_coor);
+      if (typeof new_tile.isWalkable === "function" ? new_tile.isWalkable() : void 0) {
+        return this.coor = new_coor;
+      } else {
+        this.speed.y = 0;
+        return this.speed.x = 0;
+      }
+    };
+    Hero.prototype.render = function(ctx) {
+      ctx.save();
+      ctx.translate(this.coor.x, this.coor.y);
+      this.sprite.render(this.state, ctx);
+      return ctx.restore();
+    };
+    Hero.prototype.determine_speed = function() {
       if (this.keyboard.key("right")) {
         this.speed.x += this.force;
       } else if (this.keyboard.key("left")) {
@@ -703,24 +717,10 @@
       } else {
         this.speed.y *= this.decay;
       }
-      new_coor = this.coor.add(this.speed.mult(delta));
-      walkable = typeof (_base = map.tileAtVector(new_coor)).isWalkable === "function" ? _base.isWalkable() : void 0;
-      if (typeof (_base2 = map.tileAtVector(new_coor)).isWalkable === "function" ? _base2.isWalkable() : void 0) {
-        this.coor = new_coor;
-      } else {
-        this.speed.y = 0;
-        this.speed.x = 0;
-      }
       if (this.keyboard.key("space")) {
         this.speed.y = 0.0;
         return this.speed.x = 0.0;
       }
-    };
-    Hero.prototype.render = function(ctx) {
-      ctx.save();
-      ctx.translate(this.coor.x, this.coor.y);
-      this.sprite.render(this.state, ctx);
-      return ctx.restore();
     };
     return Hero;
   })();
@@ -752,7 +752,7 @@
     Tower.prototype.update = function(delta, hero) {
       this.current_scan_rate += delta;
       if (this.current_scan_rate >= this.scan_rate) {
-        this.current_scan_rate = this.scan_rate - this.current_scan_rate;
+        this.current_scan_rate -= this.scan_rate;
         return this.scan(hero);
       }
     };
