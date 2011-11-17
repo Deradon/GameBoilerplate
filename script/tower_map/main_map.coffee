@@ -53,23 +53,15 @@ stateclass["main_map"] = class StateMainMap extends State
             @spawner = new Spawner @creep, @creeps, 5
             @spawners.push(@spawner)
           if tile.isHeroSpawner()
-            @hero = new Hero @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(tile.col,tile.row)
+            @hero = new Hero @towers, @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(tile.col,tile.row)
 
         # DEBUG TOWERS
-        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(4,5)
-        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(5,5)
-        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(9,3)
-        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(10,3)
-        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(10,6)
-        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(10,10)
-        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(9,10)
-        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(4,9)
-        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(0,14)
-        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(4,14)
+        #@towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(4,5)
+        
 
   update: (delta) ->
     @hero.update(delta, @map)
-
+    
     # DEBUG TOWER
     for tower in @towers
       tower.update(delta, @creeps)

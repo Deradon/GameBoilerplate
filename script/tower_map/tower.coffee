@@ -1,7 +1,7 @@
 
 
 class Tower
-  constructor: (@eventmanager, @keyboard, options) ->
+  constructor: (@eventmanager, options) ->
 
     @state = "normal"
     @sprite = new Sprite
