@@ -587,6 +587,7 @@
     function StateMainMap(parent) {
       var beach3d;
       this.parent = parent;
+      this.gc = __bind(this.gc, this);
       this.camera = new Camera({
         "projection": "iso",
         "vpWidth": this.parent.width,
@@ -596,6 +597,8 @@
       this.lives = 3;
       this.spawners = [];
       this.towers = [];
+      this.garbage_every = 30;
+      this.garbage_count = 0;
       beach3d = new Sprite({
         "texture": "assets/images/wc33d.png",
         "width": 107,
@@ -626,8 +629,9 @@
         "pattern": "towermap",
         "sprite": beach3d,
         "callback": __bind(function() {
-          var tile, _i, _len, _ref;
+          var tile, _i, _len, _ref, _results;
           _ref = this.map.tiles;
+          _results = [];
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             tile = _ref[_i];
             if (tile.isSpawner()) {
@@ -638,42 +642,11 @@
               this.spawner = new Spawner(this.creep, this.creeps, 5);
               this.spawners.push(this.spawner);
             }
-            if (tile.isHeroSpawner()) {
-              this.hero = new Hero(this.parent.eventmanager, this.parent.keyboard, {
-                "coor": this.map.vectorAtTile(tile.col, tile.row)
-              });
-            }
+            _results.push(tile.isHeroSpawner() ? this.hero = new Hero(this.parent.eventmanager, this.parent.keyboard, {
+              "coor": this.map.vectorAtTile(tile.col, tile.row)
+            }) : void 0);
           }
-          this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
-            "coor": this.map.vectorAtTile(4, 5)
-          }));
-          this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
-            "coor": this.map.vectorAtTile(5, 5)
-          }));
-          this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
-            "coor": this.map.vectorAtTile(9, 3)
-          }));
-          this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
-            "coor": this.map.vectorAtTile(10, 3)
-          }));
-          this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
-            "coor": this.map.vectorAtTile(10, 6)
-          }));
-          this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
-            "coor": this.map.vectorAtTile(10, 10)
-          }));
-          this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
-            "coor": this.map.vectorAtTile(9, 10)
-          }));
-          this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
-            "coor": this.map.vectorAtTile(4, 9)
-          }));
-          this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
-            "coor": this.map.vectorAtTile(0, 14)
-          }));
-          return this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
-            "coor": this.map.vectorAtTile(4, 14)
-          }));
+          return _results;
         }, this)
       });
     }
@@ -703,8 +676,9 @@
         }
       }
       if (this.lives < 0) {
-        return console.log("EPIC FAIL YOU NOOB");
+        console.log("EPIC FAIL YOU NOOB");
       }
+      return this.gc();
     };
     StateMainMap.prototype.render = function(ctx) {
       return this.camera.apply(ctx, __bind(function() {
@@ -724,6 +698,20 @@
         }
         return _results;
       }, this));
+    };
+    StateMainMap.prototype.gc = function() {
+      var tower, _i, _len, _ref, _results;
+      this.garbage_count += 1;
+      if (this.garbage_count > this.garbage_every) {
+        this.garbage_count = 0;
+        _ref = this.towers;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          tower = _ref[_i];
+          _results.push(tower.gc());
+        }
+        return _results;
+      }
     };
     return StateMainMap;
   })();
@@ -790,6 +778,7 @@
       var _ref, _ref2, _ref3, _ref4, _ref5;
       this.eventmanager = eventmanager;
       this.keyboard = keyboard;
+      this.gc = __bind(this.gc, this);
       this.state = "normal";
       this.sprite = new Sprite({
         "texture": "assets/images/enemies.png",
@@ -814,33 +803,19 @@
       this.garbage_count = 0;
     }
     Tower.prototype.update = function(delta, targets) {
-      var bullet, _i, _len, _ref;
+      var bullet, _i, _len, _ref, _results;
       this.current_scan_rate += delta;
       if (this.current_scan_rate >= this.scan_rate) {
         this.current_scan_rate -= this.scan_rate;
         this.scan(targets);
       }
       _ref = this.bullets;
+      _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         bullet = _ref[_i];
-        bullet.update(delta, targets);
+        _results.push(bullet.update(delta, targets));
       }
-      this.garbage_count += 1;
-      if (this.garbage_count > this.garbage_every) {
-        this.garbage_count = 0;
-        return this.bullets = (function() {
-          var _j, _len2, _ref2, _results;
-          _ref2 = this.bullets;
-          _results = [];
-          for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
-            bullet = _ref2[_j];
-            if (bullet.state !== "done") {
-              _results.push(bullet);
-            }
-          }
-          return _results;
-        }).call(this);
-      }
+      return _results;
     };
     Tower.prototype.render = function(ctx) {
       var bullet, _i, _len, _ref, _results;
@@ -857,16 +832,11 @@
       return _results;
     };
     Tower.prototype.scan = function(targets) {
-      var dist, target;
+      var target;
       target = this.closest_target(targets);
       if (target != null) {
-        dist = this.coor.subtract(target.coor).lengthSquared();
-        if (dist < this.range) {
-          this.state = "attacking";
-          return this.bullets.push(new Bullet(this.coor, target.coor));
-        } else {
-          return this.state = "normal";
-        }
+        this.state = "attacking";
+        return this.bullets.push(new Bullet(this.coor, target.coor));
       } else {
         return this.state = "normal";
       }
@@ -883,11 +853,26 @@
           min_range = dist;
         }
       }
-      if (min_range < this.trigger_range) {
+      if (min_range < this.range) {
         return min_target;
       } else {
         return null;
       }
+    };
+    Tower.prototype.gc = function() {
+      var bullet;
+      return this.bullets = (function() {
+        var _i, _len, _ref, _results;
+        _ref = this.bullets;
+        _results = [];
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          bullet = _ref[_i];
+          if (bullet.state !== "done") {
+            _results.push(bullet);
+          }
+        }
+        return _results;
+      }).call(this);
     };
     return Tower;
   })();
@@ -1038,9 +1023,7 @@
       }
     };
     Bullet.prototype.explode = function() {
-      console.log("callback");
-      this.state = "done";
-      return console.log(this.state);
+      return this.state = "done";
     };
     return Bullet;
   })();

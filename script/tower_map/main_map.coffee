@@ -9,6 +9,9 @@ stateclass["main_map"] = class StateMainMap extends State
     @spawners = []
     @towers = []
 
+    @garbage_every = 30
+    @garbage_count = 0
+
     beach3d = new Sprite
       "texture": "assets/images/wc33d.png"
       "width": 107
@@ -56,16 +59,16 @@ stateclass["main_map"] = class StateMainMap extends State
             @hero = new Hero @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(tile.col,tile.row)
 
         # DEBUG TOWERS
-        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(4,5)
-        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(5,5)
-        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(9,3)
-        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(10,3)
-        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(10,6)
-        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(10,10)
-        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(9,10)
-        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(4,9)
-        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(0,14)
-        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(4,14)
+#        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(4,5)
+#        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(5,5)
+#        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(9,3)
+#        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(10,3)
+#        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(10,6)
+#        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(10,10)
+#        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(9,10)
+#        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(4,9)
+#        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(0,14)
+#        @towers.push new Tower @parent.eventmanager, @parent.keyboard, "coor": @map.vectorAtTile(4,14)
 
   update: (delta) ->
     @hero.update(delta, @map)
@@ -89,6 +92,8 @@ stateclass["main_map"] = class StateMainMap extends State
     if @lives < 0
       console.log("EPIC FAIL YOU NOOB")
 
+    @gc()
+
   render: (ctx) ->
     @camera.apply ctx, =>
       @map.render(ctx)
@@ -100,4 +105,17 @@ stateclass["main_map"] = class StateMainMap extends State
         tower.render(ctx)
       for creep in @creeps
         creep.render(ctx)
+
+  gc: =>
+
+    # Remove Bullets
+    @garbage_count += 1
+    if @garbage_count > @garbage_every
+      @garbage_count = 0
+
+      #console.log @creeps
+      #@creeps = (creep for creep in @creeps when creep.state != "done")
+
+      for tower in @towers
+        tower.gc()
 

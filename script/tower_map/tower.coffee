@@ -36,12 +36,6 @@ class Tower
     for bullet in @bullets
       bullet.update(delta, targets) #TODO targets
 
-    # Remove Bullets
-    @garbage_count += 1
-    if @garbage_count > @garbage_every
-      @garbage_count = 0
-      @bullets = (bullet for bullet in @bullets when bullet.state != "done")
-
 
   render: (ctx) ->
     ctx.save()
@@ -55,18 +49,12 @@ class Tower
     target = @closest_target(targets)
 
     if target?
-      dist = @coor.subtract(target.coor).lengthSquared()
-      if dist < @range
-        @state = "attacking"
-        @bullets.push new Bullet(@coor, target.coor)
-      else
-        @state = "normal"
+      @state = "attacking"
+      @bullets.push new Bullet(@coor, target.coor)
     else
       @state = "normal"
 
   closest_target: (targets) ->
-    #console.log targets
-
     min_range = 999999
     min_target = null
     for target in targets
@@ -74,8 +62,11 @@ class Tower
       if dist < min_range
         min_target = target
         min_range  = dist
-    if min_range < @trigger_range
+    if min_range < @range
       return min_target
     else
       return null
+
+  gc: =>
+    @bullets = (bullet for bullet in @bullets when bullet.state != "done")
 

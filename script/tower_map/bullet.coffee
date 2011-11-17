@@ -66,7 +66,5 @@ class Bullet
       return null
 
   explode: =>
-    console.log "callback"
     @state = "done"
-    console.log @state
 
