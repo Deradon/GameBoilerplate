@@ -21,6 +21,8 @@ class Spawner
   spawn: () ->
     new_creep = new Creep @creep.eventmanager, {"coor": @creep.coor, "speed": @creep.speed }
     @creeps.push(new_creep)
-  
-  
+
+  gc: ->
+    #console.log "GC"
+    #@creeps =(creep for creep in @creeps when creep.state != "done")
 

@@ -681,7 +681,7 @@
       if (this.lives < 0) {
         console.log("EPIC FAIL YOU NOOB");
       }
-      return this.gc(this.creeps);
+      return this.gc();
     };
     StateMainMap.prototype.render = function(ctx) {
       return this.camera.apply(ctx, __bind(function() {
@@ -702,31 +702,24 @@
         return _results;
       }, this));
     };
-    StateMainMap.prototype.gc = function(creeps) {
-      var creep, tower, _i, _len, _ref;
+    StateMainMap.prototype.gc = function() {
+      var spawner, tower, _i, _j, _len, _len2, _ref, _ref2, _results;
       this.garbage_count += 1;
       if (this.garbage_count > this.garbage_every) {
         this.garbage_count = 0;
-        if (creeps.length > 0) {
-          creeps = (function() {
-            var _i, _len, _results;
-            _results = [];
-            for (_i = 0, _len = creeps.length; _i < _len; _i++) {
-              creep = creeps[_i];
-              if (creep.state !== "done") {
-                _results.push(creep);
-              }
-            }
-            return _results;
-          })();
-        }
-        _ref = this.towers;
+        _ref = this.spawners;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          tower = _ref[_i];
-          tower.gc();
+          spawner = _ref[_i];
+          spawner.gc();
         }
+        _ref2 = this.towers;
+        _results = [];
+        for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
+          tower = _ref2[_j];
+          _results.push(tower.gc());
+        }
+        return _results;
       }
-      return creeps;
     };
     return StateMainMap;
   })();
@@ -1084,6 +1077,7 @@
       });
       return this.creeps.push(new_creep);
     };
+    Spawner.prototype.gc = function() {};
     return Spawner;
   })();
 }).call(this);

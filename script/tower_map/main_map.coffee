@@ -4,10 +4,10 @@ stateclass["main_map"] = class StateMainMap extends State
 #    @camera = new Camera {"projection": "normal", "vpWidth": @parent.width, "vpHeight": @parent.height}
     @camera = new Camera {"projection": "iso", "vpWidth": @parent.width, "vpHeight": @parent.height}
 
-    @creeps = []
-    @lives = 3
+    @creeps   = []
+    @lives    = 3
     @spawners = []
-    @towers = []
+    @towers   = []
 
     @garbage_every = 31
     @garbage_count = 0
@@ -93,7 +93,7 @@ stateclass["main_map"] = class StateMainMap extends State
     if @lives < 0
       console.log("EPIC FAIL YOU NOOB")
 
-    @gc(@creeps)
+    @gc()
 
   render: (ctx) ->
     @camera.apply ctx, =>
@@ -107,17 +107,15 @@ stateclass["main_map"] = class StateMainMap extends State
       for creep in @creeps
         creep.render(ctx)
 
-  gc: (creeps) ->
+  gc: ->
     # Remove Bullets
     @garbage_count += 1
     if @garbage_count > @garbage_every
       @garbage_count = 0
 
-      if creeps.length > 0
-        creeps =(creep for creep in creeps when creep.state != "done")
-      #console.log creeps
+      for spawner in @spawners
+        spawner.gc()
 
       for tower in @towers
         tower.gc()
-    return creeps
 
