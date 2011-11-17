@@ -27,14 +27,14 @@ class Tower
     @garbage_every = 30
     @garbage_count = 0
 
-  update: (delta, target) -> #TODO targets
+  update: (delta, targets) -> #TODO targets
     @current_scan_rate += delta
     if @current_scan_rate >= @scan_rate
       @current_scan_rate -= @scan_rate
-      @scan(target)
+      @scan(targets)
 
     for bullet in @bullets
-      bullet.update(delta, [target]) #TODO targets
+      bullet.update(delta, targets) #TODO targets
 
     # Remove Bullets
     @garbage_count += 1
@@ -51,11 +51,31 @@ class Tower
     for bullet in @bullets
       bullet.render(ctx)
 
-  scan: (target) ->
-    dist = @coor.subtract(target.coor).lengthSquared()
-    if dist < @range
-      @state = "attacking"
-      @bullets.push new Bullet(@coor, target.coor)
+  scan: (targets) ->
+    target = @closest_target(targets)
+
+    if target?
+      dist = @coor.subtract(target.coor).lengthSquared()
+      if dist < @range
+        @state = "attacking"
+        @bullets.push new Bullet(@coor, target.coor)
+      else
+        @state = "normal"
     else
       @state = "normal"
+
+  closest_target: (targets) ->
+    #console.log targets
+
+    min_range = 999999
+    min_target = null
+    for target in targets
+      dist = @coor.subtract(target.coor).lengthSquared()
+      if dist < min_range
+        min_target = target
+        min_range  = dist
+    if min_range < @trigger_range
+      return min_target
+    else
+      return null
 

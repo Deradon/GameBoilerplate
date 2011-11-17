@@ -20,7 +20,7 @@ class Creep
 
   update: (delta, map) ->
     current_tile = map.tileAtVector(@coor)
-    if @targetReached(current_tile) 
+    if @targetReached(current_tile)
       if @state != "done"
         @state = "done"
     else
@@ -31,7 +31,7 @@ class Creep
         @coor = new_coor
       else
         @speed = newSpeed(current_tile, @speed)
-        
+
 
   render: (ctx) ->
     ctx.save()

@@ -1,9 +1,5 @@
 (function() {
-<<<<<<< HEAD
-  var Animation, Background, Bullet, Camera, Creep, Eventmanager, Game, Hero, Keyboard, Map, Shape, Sprite, State, StateMainMap, Statemanager, Tile, Timer, Tower, TowerMap, Vector, root, stateclass;
-=======
-  var Animation, Background, Camera, Creep, Eventmanager, Game, Hero, Keyboard, Map, Shape, Spawner, Sprite, State, StateMainMap, Statemanager, Tile, Timer, Tower, TowerMap, Vector, root, stateclass;
->>>>>>> 0058422443e5768445e49af758240555cad2e4ee
+  var Animation, Background, Bullet, Camera, Creep, Eventmanager, Game, Hero, Keyboard, Map, Shape, Spawner, Sprite, State, StateMainMap, Statemanager, Tile, Timer, Tower, TowerMap, Vector, root, stateclass;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
     for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
     function ctor() { this.constructor = child; }
@@ -599,6 +595,7 @@
       this.creeps = [];
       this.lives = 3;
       this.spawners = [];
+      this.towers = [];
       beach3d = new Sprite({
         "texture": "assets/images/wc33d.png",
         "width": 107,
@@ -629,9 +626,8 @@
         "pattern": "towermap",
         "sprite": beach3d,
         "callback": __bind(function() {
-          var tile, _i, _len, _ref, _results;
+          var tile, _i, _len, _ref;
           _ref = this.map.tiles;
-          _results = [];
           for (_i = 0, _len = _ref.length; _i < _len; _i++) {
             tile = _ref[_i];
             if (tile.isSpawner()) {
@@ -642,26 +638,62 @@
               this.spawner = new Spawner(this.creep, this.creeps, 5);
               this.spawners.push(this.spawner);
             }
-            _results.push(tile.isHeroSpawner() ? this.hero = new Hero(this.parent.eventmanager, this.parent.keyboard, {
-              "coor": this.map.vectorAtTile(tile.col, tile.row)
-            }) : void 0);
+            if (tile.isHeroSpawner()) {
+              this.hero = new Hero(this.parent.eventmanager, this.parent.keyboard, {
+                "coor": this.map.vectorAtTile(tile.col, tile.row)
+              });
+            }
           }
-          return _results;
+          this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
+            "coor": this.map.vectorAtTile(4, 5)
+          }));
+          this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
+            "coor": this.map.vectorAtTile(5, 5)
+          }));
+          this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
+            "coor": this.map.vectorAtTile(9, 3)
+          }));
+          this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
+            "coor": this.map.vectorAtTile(10, 3)
+          }));
+          this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
+            "coor": this.map.vectorAtTile(10, 6)
+          }));
+          this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
+            "coor": this.map.vectorAtTile(10, 10)
+          }));
+          this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
+            "coor": this.map.vectorAtTile(9, 10)
+          }));
+          this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
+            "coor": this.map.vectorAtTile(4, 9)
+          }));
+          this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
+            "coor": this.map.vectorAtTile(0, 14)
+          }));
+          return this.towers.push(new Tower(this.parent.eventmanager, this.parent.keyboard, {
+            "coor": this.map.vectorAtTile(4, 14)
+          }));
         }, this)
       });
     }
     StateMainMap.prototype.update = function(delta) {
-      var creep, spawner, _i, _j, _len, _len2, _ref, _ref2;
+      var creep, spawner, tower, _i, _j, _k, _len, _len2, _len3, _ref, _ref2, _ref3;
       this.hero.update(delta, this.map);
-      this.camera.coor = this.hero.coor;
-      _ref = this.spawners;
+      _ref = this.towers;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        spawner = _ref[_i];
+        tower = _ref[_i];
+        tower.update(delta, this.creeps);
+      }
+      this.camera.coor = this.hero.coor;
+      _ref2 = this.spawners;
+      for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
+        spawner = _ref2[_j];
         spawner.update(delta, this.map);
       }
-      _ref2 = this.creeps;
-      for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
-        creep = _ref2[_j];
+      _ref3 = this.creeps;
+      for (_k = 0, _len3 = _ref3.length; _k < _len3; _k++) {
+        creep = _ref3[_k];
         if (creep.state === "done") {
           if (creep.checkout === false) {
             this.lives -= creep.checkout = true;
@@ -676,13 +708,18 @@
     };
     StateMainMap.prototype.render = function(ctx) {
       return this.camera.apply(ctx, __bind(function() {
-        var creep, _i, _len, _ref, _results;
+        var creep, tower, _i, _j, _len, _len2, _ref, _ref2, _results;
         this.map.render(ctx);
         this.hero.render(ctx);
-        _ref = this.creeps;
-        _results = [];
+        _ref = this.towers;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          creep = _ref[_i];
+          tower = _ref[_i];
+          tower.render(ctx);
+        }
+        _ref2 = this.creeps;
+        _results = [];
+        for (_j = 0, _len2 = _ref2.length; _j < _len2; _j++) {
+          creep = _ref2[_j];
           _results.push(creep.render(ctx));
         }
         return _results;
@@ -776,17 +813,17 @@
       this.garbage_every = 30;
       this.garbage_count = 0;
     }
-    Tower.prototype.update = function(delta, target) {
+    Tower.prototype.update = function(delta, targets) {
       var bullet, _i, _len, _ref;
       this.current_scan_rate += delta;
       if (this.current_scan_rate >= this.scan_rate) {
         this.current_scan_rate -= this.scan_rate;
-        this.scan(target);
+        this.scan(targets);
       }
       _ref = this.bullets;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         bullet = _ref[_i];
-        bullet.update(delta, [target]);
+        bullet.update(delta, targets);
       }
       this.garbage_count += 1;
       if (this.garbage_count > this.garbage_every) {
@@ -819,14 +856,37 @@
       }
       return _results;
     };
-    Tower.prototype.scan = function(target) {
-      var dist;
-      dist = this.coor.subtract(target.coor).lengthSquared();
-      if (dist < this.range) {
-        this.state = "attacking";
-        return this.bullets.push(new Bullet(this.coor, target.coor));
+    Tower.prototype.scan = function(targets) {
+      var dist, target;
+      target = this.closest_target(targets);
+      if (target != null) {
+        dist = this.coor.subtract(target.coor).lengthSquared();
+        if (dist < this.range) {
+          this.state = "attacking";
+          return this.bullets.push(new Bullet(this.coor, target.coor));
+        } else {
+          return this.state = "normal";
+        }
       } else {
         return this.state = "normal";
+      }
+    };
+    Tower.prototype.closest_target = function(targets) {
+      var dist, min_range, min_target, target, _i, _len;
+      min_range = 999999;
+      min_target = null;
+      for (_i = 0, _len = targets.length; _i < _len; _i++) {
+        target = targets[_i];
+        dist = this.coor.subtract(target.coor).lengthSquared();
+        if (dist < min_range) {
+          min_target = target;
+          min_range = dist;
+        }
+      }
+      if (min_range < this.trigger_range) {
+        return min_target;
+      } else {
+        return null;
       }
     };
     return Tower;
@@ -841,17 +901,11 @@
         "width": 50,
         "height": 50,
         "key": {
-<<<<<<< HEAD
-          "normal": 3
-        }
-      });
-=======
           "done": 2,
           "normal": 3
         }
       });
       this.checkout = false;
->>>>>>> 0058422443e5768445e49af758240555cad2e4ee
       this.state = "normal";
       this.speed = (_ref = options["speed"]) != null ? _ref : new Vector(0, 0);
       this.coor = options["coor"];
@@ -913,7 +967,6 @@
     };
     return Creep;
   })();
-<<<<<<< HEAD
   Bullet = (function() {
     function Bullet(from_coor, to_coor, options) {
       this.explode = __bind(this.explode, this);      this.sprite = new Sprite({
@@ -990,7 +1043,7 @@
       return console.log(this.state);
     };
     return Bullet;
-=======
+  })();
   Spawner = (function() {
     function Spawner(creep, creeps, quantity) {
       this.creep = creep;
@@ -1020,6 +1073,5 @@
       return this.creeps.push(new_creep);
     };
     return Spawner;
->>>>>>> 0058422443e5768445e49af758240555cad2e4ee
   })();
 }).call(this);
