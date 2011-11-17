@@ -9,7 +9,7 @@ stateclass["main_map"] = class StateMainMap extends State
     @spawners = []
     @towers = []
 
-    @garbage_every = 30
+    @garbage_every = 31
     @garbage_count = 0
 
     beach3d = new Sprite
@@ -93,7 +93,7 @@ stateclass["main_map"] = class StateMainMap extends State
     if @lives < 0
       console.log("EPIC FAIL YOU NOOB")
 
-    @gc()
+    @gc(@creeps)
 
   render: (ctx) ->
     @camera.apply ctx, =>
@@ -107,16 +107,17 @@ stateclass["main_map"] = class StateMainMap extends State
       for creep in @creeps
         creep.render(ctx)
 
-  gc: =>
-
+  gc: (creeps) ->
     # Remove Bullets
     @garbage_count += 1
     if @garbage_count > @garbage_every
       @garbage_count = 0
 
-      #console.log @creeps
-      #@creeps = (creep for creep in @creeps when creep.state != "done")
+      if creeps.length > 0
+        creeps =(creep for creep in creeps when creep.state != "done")
+      #console.log creeps
 
       for tower in @towers
         tower.gc()
+    return creeps
 

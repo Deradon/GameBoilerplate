@@ -21,7 +21,7 @@ class Bullet
     @coor           = from_coor
 
     @speed          = 1#options["speed"]         ? 1
-    @damage         = 100#options["damage"]        ? 100
+    @damage         = 20#options["damage"]        ? 100
     @max_range      = 600#options["max_range"]     ? 1000
     @splash_radius  = 50#options["splash_radius"] ? 50
     @splash_damage  = 10#options["splash_damage"] ? 10
@@ -41,6 +41,7 @@ class Bullet
       @target = @closest_target(targets)
       if @target
         @state = "exploding"
+        @target.hit(this)
 
       if @range_traveled >= @max_range
         @state = "done"

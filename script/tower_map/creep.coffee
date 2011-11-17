@@ -17,6 +17,8 @@ class Creep
     @coor  = options["coor"]
     @start_coor = @coor
 
+    @hp = 1000
+
 
   update: (delta, map) ->
     current_tile = map.tileAtVector(@coor)
@@ -57,4 +59,9 @@ class Creep
         test_speed = new_speed.mult(-1)
         if speed.x != test_speed.x && speed.y != test_speed.y
           return new_speed
+
+  hit: (bullet) ->
+    @hp -= bullet.damage
+    if @hp <= 0
+      @state = "done"
 

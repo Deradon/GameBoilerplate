@@ -591,7 +591,6 @@
     function StateMainMap(parent) {
       var beach3d;
       this.parent = parent;
-      this.gc = __bind(this.gc, this);
       this.camera = new Camera({
         "projection": "iso",
         "vpWidth": this.parent.width,
@@ -601,7 +600,7 @@
       this.lives = 3;
       this.spawners = [];
       this.towers = [];
-      this.garbage_every = 30;
+      this.garbage_every = 31;
       this.garbage_count = 0;
       beach3d = new Sprite({
         "texture": "assets/images/wc33d.png",
@@ -682,7 +681,7 @@
       if (this.lives < 0) {
         console.log("EPIC FAIL YOU NOOB");
       }
-      return this.gc();
+      return this.gc(this.creeps);
     };
     StateMainMap.prototype.render = function(ctx) {
       return this.camera.apply(ctx, __bind(function() {
@@ -703,19 +702,31 @@
         return _results;
       }, this));
     };
-    StateMainMap.prototype.gc = function() {
-      var tower, _i, _len, _ref, _results;
+    StateMainMap.prototype.gc = function(creeps) {
+      var creep, tower, _i, _len, _ref;
       this.garbage_count += 1;
       if (this.garbage_count > this.garbage_every) {
         this.garbage_count = 0;
+        if (creeps.length > 0) {
+          creeps = (function() {
+            var _i, _len, _results;
+            _results = [];
+            for (_i = 0, _len = creeps.length; _i < _len; _i++) {
+              creep = creeps[_i];
+              if (creep.state !== "done") {
+                _results.push(creep);
+              }
+            }
+            return _results;
+          })();
+        }
         _ref = this.towers;
-        _results = [];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           tower = _ref[_i];
-          _results.push(tower.gc());
+          tower.gc();
         }
-        return _results;
       }
+      return creeps;
     };
     return StateMainMap;
   })();
@@ -855,10 +866,12 @@
       min_target = null;
       for (_i = 0, _len = targets.length; _i < _len; _i++) {
         target = targets[_i];
-        dist = this.coor.subtract(target.coor).lengthSquared();
-        if (dist < min_range) {
-          min_target = target;
-          min_range = dist;
+        if (target.state !== "done") {
+          dist = this.coor.subtract(target.coor).lengthSquared();
+          if (dist < min_range) {
+            min_target = target;
+            min_range = dist;
+          }
         }
       }
       if (min_range < this.range) {
@@ -903,6 +916,7 @@
       this.speed = (_ref = options["speed"]) != null ? _ref : new Vector(0, 0);
       this.coor = options["coor"];
       this.start_coor = this.coor;
+      this.hp = 1000;
     }
     Creep.prototype.update = function(delta, map) {
       var current_tile, new_coor, new_tile;
@@ -958,6 +972,12 @@
       }
       return _results;
     };
+    Creep.prototype.hit = function(bullet) {
+      this.hp -= bullet.damage;
+      if (this.hp <= 0) {
+        return this.state = "done";
+      }
+    };
     return Creep;
   })();
   Bullet = (function() {
@@ -982,7 +1002,7 @@
       this.direction = to_coor.subtract(from_coor).norm();
       this.coor = from_coor;
       this.speed = 1;
-      this.damage = 100;
+      this.damage = 20;
       this.max_range = 600;
       this.splash_radius = 50;
       this.splash_damage = 10;
@@ -1000,6 +1020,7 @@
         this.target = this.closest_target(targets);
         if (this.target) {
           this.state = "exploding";
+          this.target.hit(this);
         }
         if (this.range_traveled >= this.max_range) {
           return this.state = "done";

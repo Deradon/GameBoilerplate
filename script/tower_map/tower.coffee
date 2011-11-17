@@ -57,7 +57,7 @@ class Tower
   closest_target: (targets) ->
     min_range = 999999
     min_target = null
-    for target in targets
+    for target in targets when target.state != "done"
       dist = @coor.subtract(target.coor).lengthSquared()
       if dist < min_range
         min_target = target
@@ -68,5 +68,5 @@ class Tower
       return null
 
   gc: =>
-    @bullets = (bullet for bullet in @bullets when bullet.state != "done")
+    @bullets = (bullet for bullet in @bullets when bullet.state isnt "done")
 
