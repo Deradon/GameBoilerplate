@@ -647,7 +647,7 @@
         tower = _ref[_i];
         tower.update(delta, this.creep);
       }
-      this.camera.coor = this.hero.coor;
+      this.camera.coor = this.creep.coor;
       return this.creep.update(delta, this.map);
     };
     StateMainMap.prototype.render = function(ctx) {
