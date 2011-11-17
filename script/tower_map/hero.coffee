@@ -14,16 +14,16 @@ class Hero
     @state = "normal"
 
     # Coordinates of the mighty Hero
-    @coor       = options["coor"]
+    @coor = options["coor"]
 
     # And his/her speed
-    @speed      = new Vector(0, 0)
+    @speed = new Vector(0, 0)
 
     # Acceleration (speed-up / speed-down)
-    @force      = 0.01
+    @force = 0.01
 
     # Used to slow down movements if no keys pressed
-    @decay      = 0.95
+    @decay = 0.95
 
 
   update: (delta, map) ->
@@ -41,8 +41,8 @@ class Hero
 
   render: (ctx) ->
     ctx.save()
-    ctx.translate @coor.x, @coor.y
-    @sprite.render( @state, ctx )
+    ctx.translate(@coor.x, @coor.y)
+    @sprite.render(@state, ctx)
     ctx.restore()
 
   # Handling Keyboard events and get new speed

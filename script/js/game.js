@@ -528,7 +528,7 @@
           ctx.save();
           ctx.scale(1, 0.4);
           ctx.rotate(Math.PI / 4);
-          ctx.translate(300, -400);
+          ctx.translate(this.vpWidth / 2 - this.coor.x + 300, this.vpHeight / 2 - this.coor.y - 250);
           callback();
           return ctx.restore();
       }
@@ -557,7 +557,7 @@
   })();
   $(function() {
     var tower_map;
-    tower_map = new TowerMap(1024, 768);
+    tower_map = new TowerMap(800, 600);
     return tower_map.start();
   });
   stateclass["main_map"] = StateMainMap = (function() {
@@ -647,6 +647,7 @@
         tower = _ref[_i];
         tower.update(delta, this.creep);
       }
+      this.camera.coor = this.hero.coor;
       return this.creep.update(delta, this.map);
     };
     StateMainMap.prototype.render = function(ctx) {

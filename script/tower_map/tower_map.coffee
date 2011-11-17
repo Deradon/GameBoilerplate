@@ -26,6 +26,6 @@ class TowerMap extends Game
 
 
 $ ->
-  tower_map = new TowerMap( 1024, 768 )
+  tower_map = new TowerMap( 800, 600 )
   tower_map.start()
 

@@ -56,7 +56,7 @@ stateclass["main_map"] = class StateMainMap extends State
     for tower in @towers
       tower.update(delta, @creep)
 
-    #@camera.coor = @hero.coor
+    @camera.coor = @hero.coor
     @creep.update(delta, @map)
 
   render: (ctx) ->
