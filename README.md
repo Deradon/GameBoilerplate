@@ -1,5 +1,8 @@
 # Game Boilerplate
 
+== DEMO:
+URL: http://188.40.124.76/deradon/tower_map/current/
+
 If you want to create a browser game with Coffeescript based on the Canvas element, you will likely need some classes like that provide a game loop, Sprites, Animation and so on.
 
 Here you will find this basic boilerplate code:
